@@ -100,7 +100,7 @@ export const supabase = {
           }
 
           return { data: null, error: null }
-        }),
+        },
 
         order: (column: string, options?: any) => ({
           limit: (count: number) => ({
