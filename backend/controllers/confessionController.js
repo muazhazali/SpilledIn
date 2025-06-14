@@ -39,3 +39,39 @@ export async function deleteConfession(confessionId, currentUserId) {
 
   if (error) throw error
 }
+
+export function applyVoteLogic(confessions, confessionId, voteType) {
+  return confessions.map((confession) => {
+    if (confession.id === confessionId) {
+      const currentVote = confession.user_vote
+      let newUpvotes = confession.upvotes
+      let newDownvotes = confession.downvotes
+      let newUserVote = confession.user_vote
+
+      if (currentVote === "upvote") newUpvotes -= 1
+      else if (currentVote === "downvote") newDownvotes -= 1
+
+      if (currentVote !== voteType) {
+        if (voteType === "upvote") {
+          newUpvotes += 1
+          newUserVote = "upvote"
+        } else {
+          newDownvotes += 1
+          newUserVote = "downvote"
+        }
+      } else {
+        newUserVote = null
+      }
+
+      return {
+        ...confession,
+        upvotes: newUpvotes,
+        downvotes: newDownvotes,
+        net_score: newUpvotes - newDownvotes,
+        user_vote: newUserVote,
+      }
+    }
+
+    return confession
+  })
+}
