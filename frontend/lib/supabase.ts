@@ -4,7 +4,7 @@ export const supabase = {
     signUp: async ({ email, password }: { email: string; password: string }) => {
       // Simulate signup delay
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       const userId = `user_${Date.now()}`
       return {
         data: {
@@ -16,11 +16,11 @@ export const supabase = {
         error: null
       }
     },
-    
+
     signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
       // Simulate signin delay
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       // Check if it's a demo account
       if (email === "demo@spilledin.com" && password === "demo123") {
         return {
@@ -33,7 +33,7 @@ export const supabase = {
           error: null
         }
       }
-      
+
       // For other emails, create a new user
       const userId = `user_${Date.now()}`
       return {
@@ -46,12 +46,12 @@ export const supabase = {
         error: null
       }
     },
-    
+
     signOut: async () => {
       await new Promise(resolve => setTimeout(resolve, 500))
       return { error: null }
     },
-    
+
     getUser: async () => {
       // Check if user is logged in (simulate session)
       const currentUser = localStorage.getItem('spilledin_user')
@@ -65,7 +65,7 @@ export const supabase = {
       return { data: { user: null } }
     }
   },
-  
+
   from: (table: string) => ({
     select: (columns?: string) => ({
       eq: (column: string, value: any) => ({
@@ -79,7 +79,7 @@ export const supabase = {
             const company = companies.find(c => c.invite_code === value)
             return { data: company, error: company ? null : new Error("Invalid invite code") }
           }
-          
+
           if (table === "user_profiles" && column === "id") {
             return {
               data: {
@@ -98,10 +98,10 @@ export const supabase = {
               error: null
             }
           }
-          
-          return { data: null, error: null }\
+
+          return { data: null, error: null }
         }),
-        
+
         order: (column: string, options?: any) => ({
           limit: (count: number) => ({
             then: async (callback: any) => {
@@ -120,7 +120,7 @@ export const supabase = {
           })
         })
       }),
-      
+
       gte: (column: string, value: any) => ({
         lte: (column2: string, value2: any) => ({
           order: (orderColumn: string, options?: any) => ({
@@ -140,7 +140,7 @@ export const supabase = {
                       }
                     },
                     {
-                      id: "conf_2", 
+                      id: "conf_2",
                       content: "I've been pretending to understand blockchain for 2 years. I still have no idea what it actually does.",
                       upvotes: 38,
                       downvotes: 7,
@@ -159,7 +159,7 @@ export const supabase = {
           })
         })
       }),
-      
+
       order: (column: string, options?: any) => ({
         then: async (callback: any) => {
           if (table === "confessions") {
@@ -247,7 +247,7 @@ export const supabase = {
             ]
             return callback({ data: dummyConfessions, error: null })
           }
-          
+
           if (table === "user_profiles") {
             const dummyUsers = [
               { anonymous_username: "DramaDeity99", toxicity_score: 1250, total_upvotes: 89, total_downvotes: 23 },
@@ -261,15 +261,15 @@ export const supabase = {
             ]
             return callback({ data: dummyUsers, error: null })
           }
-          
+
           if (table === "awards") {
             return callback({ data: [], error: null })
           }
-          
+
           return callback({ data: [], error: null })
         }
       }),
-      
+
       or: (condition: string) => ({
         order: (column: string, options?: any) => ({
           then: async (callback: any) => {
@@ -297,26 +297,26 @@ export const supabase = {
         })
       })
     }),
-    
+
     insert: async (data: any) => {
       await new Promise(resolve => setTimeout(resolve, 500))
-      
+
       if (table === "user_profiles") {
         return { data: null, error: null }
       }
-      
+
       if (table === "confessions") {
         return { data: null, error: null }
       }
-      
+
       return { data: null, error: null }
     },
-    
+
     upsert: async (data: any) => {
       await new Promise(resolve => setTimeout(resolve, 300))
       return { data: null, error: null }
     },
-    
+
     delete: () => ({
       eq: (column: string, value: any) => ({
         eq: (column2: string, value2: any) => ({
@@ -332,7 +332,7 @@ export const supabase = {
       })
     })
   }),
-  
+
   rpc: async (functionName: string) => {
     if (functionName === "generate_anonymous_username") {
       const adjectives = ['Sneaky', 'Mysterious', 'Curious', 'Brave', 'Witty', 'Clever', 'Bold', 'Swift', 'Silent', 'Fierce']
@@ -340,16 +340,16 @@ export const supabase = {
       const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)]
       const randomNoun = nouns[Math.floor(Math.random() * nouns.length)]
       const randomNumber = Math.floor(Math.random() * 100)
-      
+
       return {
         data: `${randomAdjective}${randomNoun}${randomNumber}`,
         error: null
       }
     }
-    
+
     return { data: null, error: null }
   },
-  
+
   storage: {
     from: (bucket: string) => ({
       upload: async (path: string, file: File) => {
@@ -359,7 +359,7 @@ export const supabase = {
           error: null
         }
       },
-      
+
       getPublicUrl: (path: string) => ({
         data: {
           publicUrl: `/placeholder.svg?height=300&width=400&text=Uploaded+Image`
