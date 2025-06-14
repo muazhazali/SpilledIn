@@ -1,375 +1,11 @@
-// Mock Supabase client for demo purposes
-export const supabase = {
-  auth: {
-    signUp: async ({ email, password }: { email: string; password: string }) => {
-      // Simulate signup delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+import { createClient } from '@supabase/supabase-js'
 
-      const userId = `user_${Date.now()}`
-      return {
-        data: {
-          user: {
-            id: userId,
-            email: email
-          }
-        },
-        error: null
-      }
-    },
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-    signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
-      // Simulate signin delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-      // Check if it's a demo account
-      if (email === "demo@spilledin.com" && password === "demo123") {
-        return {
-          data: {
-            user: {
-              id: "demo_user_123",
-              email: email
-            }
-          },
-          error: null
-        }
-      }
-
-      // For other emails, create a new user
-      const userId = `user_${Date.now()}`
-      return {
-        data: {
-          user: {
-            id: userId,
-            email: email
-          }
-        },
-        error: null
-      }
-    },
-
-    signOut: async () => {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      return { error: null }
-    },
-
-    getUser: async () => {
-      // Check if user is logged in (simulate session)
-      const currentUser = localStorage.getItem('spilledin_user')
-      if (currentUser) {
-        return {
-          data: {
-            user: JSON.parse(currentUser)
-          }
-        }
-      }
-      return { data: { user: null } }
-    }
-  },
-
-  from: (table: string) => ({
-    select: (columns?: string) => ({
-      eq: (column: string, value: any) => ({
-        single: async () => {
-          if (table === "companies" && column === "invite_code") {
-            const companies = [
-              { id: "comp_1", name: "TechCorp Inc", invite_code: "TECH2024" },
-              { id: "comp_2", name: "StartupXYZ", invite_code: "STARTUP123" },
-              { id: "comp_3", name: "MegaCorp Ltd", invite_code: "MEGA456" }
-            ]
-            const company = companies.find(c => c.invite_code === value)
-            return { data: company, error: company ? null : new Error("Invalid invite code") }
-          }
-
-          if (table === "user_profiles" && column === "id") {
-            return {
-              data: {
-                id: value,
-                company_id: "comp_1",
-                anonymous_username: "SneakyPanda42",
-                toxicity_score: 150,
-                total_upvotes: 45,
-                total_downvotes: 12,
-                created_at: new Date().toISOString(),
-                companies: {
-                  name: "TechCorp Inc",
-                  invite_code: "TECH2024"
-                }
-              },
-              error: null
-            }
-          }
-
-          return { data: null, error: null }
-        },
-
-        order: (column: string, options?: any) => ({
-          limit: (count: number) => ({
-            then: async (callback: any) => {
-              if (table === "user_profiles") {
-                const dummyUsers = [
-                  { anonymous_username: "DramaDeity99", toxicity_score: 1250, total_upvotes: 89, total_downvotes: 23 },
-                  { anonymous_username: "ChaosChamp88", toxicity_score: 890, total_upvotes: 67, total_downvotes: 18 },
-                  { anonymous_username: "TroubleMaker77", toxicity_score: 456, total_upvotes: 45, total_downvotes: 12 },
-                  { anonymous_username: "SneakyPanda42", toxicity_score: 234, total_upvotes: 34, total_downvotes: 8 },
-                  { anonymous_username: "MysteriousFox21", toxicity_score: 123, total_upvotes: 28, total_downvotes: 15 }
-                ]
-                return callback({ data: dummyUsers.slice(0, count), error: null })
-              }
-              return callback({ data: [], error: null })
-            }
-          })
-        })
-      }),
-
-      gte: (column: string, value: any) => ({
-        lte: (column2: string, value2: any) => ({
-          order: (orderColumn: string, options?: any) => ({
-            limit: (count: number) => ({
-              then: async (callback: any) => {
-                if (table === "confessions") {
-                  const dummyConfessions = [
-                    {
-                      id: "conf_1",
-                      content: "I accidentally sent a meme to the CEO instead of my friend. Now everyone thinks I'm the office comedian 😅",
-                      upvotes: 45,
-                      downvotes: 3,
-                      net_score: 42,
-                      user_profiles: {
-                        anonymous_username: "SneakyPanda42",
-                        toxicity_score: 234
-                      }
-                    },
-                    {
-                      id: "conf_2",
-                      content: "I've been pretending to understand blockchain for 2 years. I still have no idea what it actually does.",
-                      upvotes: 38,
-                      downvotes: 7,
-                      net_score: 31,
-                      user_profiles: {
-                        anonymous_username: "MysteriousFox21",
-                        toxicity_score: 123
-                      }
-                    }
-                  ]
-                  return callback({ data: dummyConfessions.slice(0, count), error: null })
-                }
-                return callback({ data: [], error: null })
-              }
-            })
-          })
-        })
-      }),
-
-      order: (column: string, options?: any) => ({
-        then: async (callback: any) => {
-          if (table === "confessions") {
-            const dummyConfessions = [
-              {
-                id: "conf_1",
-                content: "I accidentally sent a meme to the CEO instead of my friend. Now everyone thinks I'm the office comedian 😅",
-                image_url: null,
-                upvotes: 45,
-                downvotes: 3,
-                net_score: 42,
-                created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                user_id: "user_123",
-                user_profiles: {
-                  anonymous_username: "SneakyPanda42",
-                  toxicity_score: 234
-                },
-                user_vote: null,
-                is_own: false
-              },
-              {
-                id: "conf_2",
-                content: "I've been pretending to understand blockchain for 2 years. I still have no idea what it actually does.",
-                image_url: null,
-                upvotes: 38,
-                downvotes: 7,
-                net_score: 31,
-                created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-                user_id: "user_456",
-                user_profiles: {
-                  anonymous_username: "MysteriousFox21",
-                  toxicity_score: 123
-                },
-                user_vote: null,
-                is_own: false
-              },
-              {
-                id: "conf_3",
-                content: "My manager asked me to 'think outside the box' so I literally moved my desk outside. HR was not amused.",
-                image_url: null,
-                upvotes: 67,
-                downvotes: 12,
-                net_score: 55,
-                created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-                user_id: "user_789",
-                user_profiles: {
-                  anonymous_username: "BoldEagle88",
-                  toxicity_score: 445
-                },
-                user_vote: null,
-                is_own: false
-              },
-              {
-                id: "conf_4",
-                content: "I told everyone I was working from home but I was actually at the beach. The tan lines gave me away during the video call.",
-                image_url: null,
-                upvotes: 89,
-                downvotes: 15,
-                net_score: 74,
-                created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-                user_id: "user_101",
-                user_profiles: {
-                  anonymous_username: "CleverWolf99",
-                  toxicity_score: 678
-                },
-                user_vote: null,
-                is_own: false
-              },
-              {
-                id: "conf_5",
-                content: "I've been using the same password for everything since 2015. It's 'password123' and I'm too scared to change it now.",
-                image_url: null,
-                upvotes: 23,
-                downvotes: 45,
-                net_score: -22,
-                created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-                user_id: "user_202",
-                user_profiles: {
-                  anonymous_username: "SilentOwl77",
-                  toxicity_score: -45
-                },
-                user_vote: null,
-                is_own: false
-              }
-            ]
-            return callback({ data: dummyConfessions, error: null })
-          }
-
-          if (table === "user_profiles") {
-            const dummyUsers = [
-              { anonymous_username: "DramaDeity99", toxicity_score: 1250, total_upvotes: 89, total_downvotes: 23 },
-              { anonymous_username: "ChaosChamp88", toxicity_score: 890, total_upvotes: 67, total_downvotes: 18 },
-              { anonymous_username: "TroubleMaker77", toxicity_score: 456, total_upvotes: 45, total_downvotes: 12 },
-              { anonymous_username: "SneakyPanda42", toxicity_score: 234, total_upvotes: 34, total_downvotes: 8 },
-              { anonymous_username: "MysteriousFox21", toxicity_score: 123, total_upvotes: 28, total_downvotes: 15 },
-              { anonymous_username: "BoldEagle88", toxicity_score: 89, total_upvotes: 22, total_downvotes: 11 },
-              { anonymous_username: "CleverWolf99", toxicity_score: 67, total_upvotes: 19, total_downvotes: 9 },
-              { anonymous_username: "SilentOwl77", toxicity_score: -45, total_upvotes: 12, total_downvotes: 34 }
-            ]
-            return callback({ data: dummyUsers, error: null })
-          }
-
-          if (table === "awards") {
-            return callback({ data: [], error: null })
-          }
-
-          return callback({ data: [], error: null })
-        }
-      }),
-
-      or: (condition: string) => ({
-        order: (column: string, options?: any) => ({
-          then: async (callback: any) => {
-            // Simple search simulation
-            const dummyConfessions = [
-              {
-                id: "conf_1",
-                content: "I accidentally sent a meme to the CEO instead of my friend. Now everyone thinks I'm the office comedian 😅",
-                image_url: null,
-                upvotes: 45,
-                downvotes: 3,
-                net_score: 42,
-                created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                user_id: "user_123",
-                user_profiles: {
-                  anonymous_username: "SneakyPanda42",
-                  toxicity_score: 234
-                },
-                user_vote: null,
-                is_own: false
-              }
-            ]
-            return callback({ data: dummyConfessions, error: null })
-          }
-        })
-      })
-    }),
-
-    insert: async (data: any) => {
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      if (table === "user_profiles") {
-        return { data: null, error: null }
-      }
-
-      if (table === "confessions") {
-        return { data: null, error: null }
-      }
-
-      return { data: null, error: null }
-    },
-
-    upsert: async (data: any) => {
-      await new Promise(resolve => setTimeout(resolve, 300))
-      return { data: null, error: null }
-    },
-
-    delete: () => ({
-      eq: (column: string, value: any) => ({
-        eq: (column2: string, value2: any) => ({
-          then: async (callback: any) => {
-            await new Promise(resolve => setTimeout(resolve, 300))
-            return callback({ data: null, error: null })
-          }
-        }),
-        then: async (callback: any) => {
-          await new Promise(resolve => setTimeout(resolve, 300))
-          return callback({ data: null, error: null })
-        }
-      })
-    })
-  }),
-
-  rpc: async (functionName: string) => {
-    if (functionName === "generate_anonymous_username") {
-      const adjectives = ['Sneaky', 'Mysterious', 'Curious', 'Brave', 'Witty', 'Clever', 'Bold', 'Swift', 'Silent', 'Fierce']
-      const nouns = ['Panda', 'Tiger', 'Eagle', 'Wolf', 'Fox', 'Bear', 'Lion', 'Hawk', 'Owl', 'Shark']
-      const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)]
-      const randomNoun = nouns[Math.floor(Math.random() * nouns.length)]
-      const randomNumber = Math.floor(Math.random() * 100)
-
-      return {
-        data: `${randomAdjective}${randomNoun}${randomNumber}`,
-        error: null
-      }
-    }
-
-    return { data: null, error: null }
-  },
-
-  storage: {
-    from: (bucket: string) => ({
-      upload: async (path: string, file: File) => {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        return {
-          data: { path: path },
-          error: null
-        }
-      },
-
-      getPublicUrl: (path: string) => ({
-        data: {
-          publicUrl: `/placeholder.svg?height=300&width=400&text=Uploaded+Image`
-        }
-      })
-    })
-  }
-}
-
-// Keep the same Database type for TypeScript
+// Database Types
 export type Database = {
   public: {
     Tables: {
@@ -508,5 +144,309 @@ export type Database = {
         }
       }
     }
+    Functions: {
+      generate_anonymous_username: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      update_user_toxicity_score: {
+        Args: {
+          user_uuid: string
+        }
+        Returns: void
+      }
+      search_confessions: {
+        Args: {
+          search_query?: string
+          company_filter?: string
+          sort_by?: string
+          limit_count?: number
+          offset_count?: number
+        }
+        Returns: {
+          id: string
+          content: string
+          image_url: string | null
+          upvotes: number
+          downvotes: number
+          net_score: number
+          created_at: string
+          user_id: string
+          anonymous_username: string
+          toxicity_score: number
+          user_vote: string | null
+          is_own: boolean
+        }[]
+      }
+      get_monthly_stats: {
+        Args: {
+          target_month: number
+          target_year: number
+        }
+        Returns: {
+          top_users: {
+            anonymous_username: string
+            toxicity_score: number
+            total_upvotes: number
+            total_downvotes: number
+          }[]
+          top_confessions: {
+            id: string
+            content: string
+            net_score: number
+            anonymous_username: string
+            created_at: string
+          }[]
+          total_confessions: number
+          total_votes: number
+          average_toxicity: number
+        }
+      }
+      get_company_stats: {
+        Args: {
+          company_uuid: string
+        }
+        Returns: {
+          total_users: number
+          total_confessions: number
+          total_votes: number
+          average_toxicity: number
+          top_users: {
+            anonymous_username: string
+            toxicity_score: number
+          }[]
+        }
+      }
+    }
   }
+}
+
+// Helper types
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
+
+// Specific table types for easier use
+export type Company = Tables<'companies'>
+export type UserProfile = Tables<'user_profiles'>
+export type Confession = Tables<'confessions'>
+export type Vote = Tables<'votes'>
+export type Award = Tables<'awards'>
+
+// Extended types with relations
+export type ConfessionWithProfile = Confession & {
+  user_profiles: {
+    anonymous_username: string
+    toxicity_score: number
+  }
+  user_vote?: string | null
+  is_own?: boolean
+}
+
+export type UserProfileWithCompany = UserProfile & {
+  companies: {
+    name: string
+    invite_code: string
+  }
+}
+
+// Utility functions for Supabase operations
+export const getConfessions = async (sortBy: 'popular' | 'latest' = 'popular', limit = 20, offset = 0) => {
+  const { data, error } = await supabase.rpc('search_confessions', {
+    search_query: null,
+    company_filter: null,
+    sort_by: sortBy,
+    limit_count: limit,
+    offset_count: offset
+  })
+
+  if (error) throw error
+  return data
+}
+
+export const searchConfessions = async (query: string, sortBy: 'popular' | 'latest' = 'popular', limit = 20, offset = 0) => {
+  const { data, error } = await supabase.rpc('search_confessions', {
+    search_query: query,
+    company_filter: null,
+    sort_by: sortBy,
+    limit_count: limit,
+    offset_count: offset
+  })
+
+  if (error) throw error
+  return data
+}
+
+export const createConfession = async (content: string, imageFile?: File) => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('User not authenticated')
+
+  // Get user profile to get company_id
+  const { data: profile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('company_id')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError) throw profileError
+
+  let imageUrl = null
+
+  // Upload image if provided
+  if (imageFile) {
+    const fileExt = imageFile.name.split('.').pop()
+    const fileName = `${user.id}-${Date.now()}.${fileExt}`
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('confession-images')
+      .upload(fileName, imageFile)
+
+    if (uploadError) throw uploadError
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('confession-images')
+      .getPublicUrl(fileName)
+
+    imageUrl = publicUrl
+  }
+
+  // Create confession
+  const { data, error } = await supabase
+    .from('confessions')
+    .insert({
+      user_id: user.id,
+      company_id: profile.company_id,
+      content,
+      image_url: imageUrl
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export const voteOnConfession = async (confessionId: string, voteType: 'upvote' | 'downvote') => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('User not authenticated')
+
+  // Check if user already voted
+  const { data: existingVote } = await supabase
+    .from('votes')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('confession_id', confessionId)
+    .single()
+
+  if (existingVote) {
+    if (existingVote.vote_type === voteType) {
+      // Remove vote if same type
+      const { error } = await supabase
+        .from('votes')
+        .delete()
+        .eq('id', existingVote.id)
+      
+      if (error) throw error
+      return { action: 'removed', voteType }
+    } else {
+      // Update vote if different type
+      const { error } = await supabase
+        .from('votes')
+        .update({ vote_type: voteType })
+        .eq('id', existingVote.id)
+      
+      if (error) throw error
+      return { action: 'updated', voteType }
+    }
+  } else {
+    // Create new vote
+    const { error } = await supabase
+      .from('votes')
+      .insert({
+        user_id: user.id,
+        confession_id: confessionId,
+        vote_type: voteType
+      })
+    
+    if (error) throw error
+    return { action: 'created', voteType }
+  }
+}
+
+export const deleteConfession = async (confessionId: string) => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('User not authenticated')
+
+  const { error } = await supabase
+    .from('confessions')
+    .delete()
+    .eq('id', confessionId)
+    .eq('user_id', user.id) // Ensure user can only delete their own confessions
+
+  if (error) throw error
+}
+
+export const getMonthlyStats = async (month: number, year: number) => {
+  const { data, error } = await supabase.rpc('get_monthly_stats', {
+    target_month: month,
+    target_year: year
+  })
+
+  if (error) throw error
+  return data
+}
+
+export const getUserProfile = async (userId?: string) => {
+  const { data: { user } } = await supabase.auth.getUser()
+  const targetUserId = userId || user?.id
+  
+  if (!targetUserId) throw new Error('User not found')
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select(`
+      *,
+      companies (
+        name,
+        invite_code
+      )
+    `)
+    .eq('id', targetUserId)
+    .single()
+
+  if (error) throw error
+  return data as UserProfileWithCompany
+}
+
+export const getUserConfessions = async (userId?: string, limit = 20, offset = 0) => {
+  const { data: { user } } = await supabase.auth.getUser()
+  const targetUserId = userId || user?.id
+  
+  if (!targetUserId) throw new Error('User not found')
+
+  const { data, error } = await supabase
+    .from('confessions')
+    .select(`
+      *,
+      user_profiles!inner (
+        anonymous_username,
+        toxicity_score
+      )
+    `)
+    .eq('user_id', targetUserId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+
+  if (error) throw error
+  return data
+}
+
+export const getTopUsers = async (limit = 10) => {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('anonymous_username, toxicity_score, total_upvotes, total_downvotes')
+    .order('toxicity_score', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return data
 }

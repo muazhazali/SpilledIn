@@ -13,7 +13,7 @@ import { signIn, signUp } from "@/lib/auth"
 import { Loader2 } from "lucide-react"
 
 interface AuthFormProps {
-  onSuccess: () => void
+  onSuccess?: () => void
 }
 
 export function AuthForm({ onSuccess }: AuthFormProps) {
@@ -34,7 +34,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         title: "Welcome back!",
         description: "You have successfully signed in.",
       })
-      onSuccess()
+      onSuccess?.()
     } catch (error: any) {
       toast({
         title: "Error",
@@ -61,7 +61,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         title: "Account created!",
         description: "Welcome to SpilledIn! You can now start confessing.",
       })
-      onSuccess()
+      onSuccess?.()
     } catch (error: any) {
       toast({
         title: "Error",

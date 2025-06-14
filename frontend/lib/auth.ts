@@ -34,15 +34,12 @@ export const signUp = async (email: string, password: string, inviteCode: string
   if (authError) throw authError
 
   if (authData.user) {
-    // Store user in localStorage for demo
-    localStorage.setItem("spilledin_user", JSON.stringify(authData.user))
-
-    // Generate anonymous username
+    // Generate anonymous username using the database function
     const { data: usernameData, error: usernameError } = await supabase.rpc("generate_anonymous_username")
 
     if (usernameError) throw usernameError
 
-    // Create user profile (simulated)
+    // Create user profile
     const { error: profileError } = await supabase.from("user_profiles").insert({
       id: authData.user.id,
       company_id: company.id,
@@ -62,21 +59,12 @@ export const signIn = async (email: string, password: string) => {
   })
 
   if (error) throw error
-
-  // Store user in localStorage for demo
-  if (data.user) {
-    localStorage.setItem("spilledin_user", JSON.stringify(data.user))
-  }
-
   return data
 }
 
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut()
   if (error) throw error
-
-  // Remove user from localStorage
-  localStorage.removeItem("spilledin_user")
 }
 
 export const getCurrentUser = async () => {
@@ -101,4 +89,32 @@ export const getCurrentUser = async () => {
   if (error) throw error
 
   return { user, profile }
+}
+
+// Additional auth helper functions
+export const resetPassword = async (email: string) => {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+
+  if (error) throw error
+}
+
+export const updatePassword = async (newPassword: string) => {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword
+  })
+
+  if (error) throw error
+}
+
+export const getSession = async () => {
+  const { data: { session }, error } = await supabase.auth.getSession()
+  if (error) throw error
+  return session
+}
+
+// Auth state change listener
+export const onAuthStateChange = (callback: (event: string, session: any) => void) => {
+  return supabase.auth.onAuthStateChange(callback)
 }

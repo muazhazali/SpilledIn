@@ -1,31 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { getCurrentUser } from "@/lib/auth"
+import { useAuth } from "@/hooks/useAuth"
 import { AuthForm } from "@/components/auth-form"
 import { Dashboard } from "@/components/dashboard"
 import { Loader2 } from "lucide-react"
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
-    try {
-      const userData = await getCurrentUser()
-      setUser(userData)
-    } catch (error) {
-      console.error("Error checking user:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { user, profile, loading } = useAuth()
 
   if (loading) {
     return (
@@ -35,9 +16,9 @@ export default function Home() {
     )
   }
 
-  if (!user) {
-    return <AuthForm onSuccess={checkUser} />
+  if (!user || !profile) {
+    return <AuthForm />
   }
 
-  return <Dashboard user={user} />
+  return <Dashboard user={{ user, profile }} />
 }
