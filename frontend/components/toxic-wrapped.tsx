@@ -73,10 +73,7 @@ export function ToxicWrapped() {
           upvotes,
           downvotes,
           net_score,
-          user_profiles (
-            anonymous_username,
-            toxicity_score
-          )
+          user_id
         `)
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString())
@@ -84,6 +81,30 @@ export function ToxicWrapped() {
         .limit(5)
 
       if (confessionsError) throw confessionsError
+
+      // Fetch user profiles for the confession authors
+      const userIds = confessionsData?.map(c => c.user_id) || []
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("user_profiles")
+        .select("id, anonymous_username, toxicity_score")
+        .in("id", userIds)
+
+      if (profilesError) throw profilesError
+
+      // Combine confession data with user profiles
+      const confessionsWithProfiles = confessionsData?.map(confession => {
+        const userProfile = profilesData?.find(p => p.id === confession.user_id)
+        return {
+          ...confession,
+          user_profiles: userProfile ? {
+            anonymous_username: userProfile.anonymous_username,
+            toxicity_score: userProfile.toxicity_score
+          } : {
+            anonymous_username: "Unknown User",
+            toxicity_score: 0
+          }
+        }
+      }) || []
 
       // Fetch monthly statistics
       const { data: statsData, error: statsError } = await supabase
@@ -99,7 +120,7 @@ export function ToxicWrapped() {
       const avgToxicity = usersData?.reduce((sum, user) => sum + user.toxicity_score, 0) / (usersData?.length || 1)
 
       setTopUsers(usersData || [])
-      setTopConfessions(confessionsData || [])
+      setTopConfessions(confessionsWithProfiles)
       setMonthlyStats({
         total_confessions: totalConfessions,
         total_votes: usersData?.reduce((sum, user) => sum + user.total_upvotes + user.total_downvotes, 0) || 0,
