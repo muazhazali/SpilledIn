@@ -6,3 +6,4 @@ const supabase = createClient(url, key)
 
 module.exports = supabase; //Pipeline or middleman to all other files
 
+//git fetch, to get any new changes, git pull to pull the files
