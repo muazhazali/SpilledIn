@@ -9,6 +9,7 @@ import { getToxicityTier } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { Trophy, TrendingUp, TrendingDown, Calendar, Trash2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import { supabase } from "@/lib/supabase"
 
 interface UserProfileProps {
   user: any
@@ -43,48 +44,31 @@ export function UserProfile({ user }: UserProfileProps) {
     fetchUserData()
   }, [])
 
-  // Update user profile to show demo user data
+  // Fetch live data for this user from Supabase
 
   const fetchUserData = async () => {
     try {
-      // For demo, show some sample confessions for the current user
-      const demoConfessions = [
-        {
-          id: "my_conf_1",
-          content:
-            "I've been using the same password for everything since 2015. It's 'password123' and I'm too scared to change it now.",
-          image_url: null,
-          upvotes: 23,
-          downvotes: 45,
-          net_score: -22,
-          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: "my_conf_2",
-          content:
-            "I told my team I was 'researching' for 3 hours but I was actually watching cat videos. The research was very thorough though.",
-          image_url: null,
-          upvotes: 67,
-          downvotes: 12,
-          net_score: 55,
-          created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-        },
-      ]
+      // Fetch confessions authored by the current user
+      const { data: confData, error: confError } = await supabase
+        .from("confessions")
+        .select("id, content, image_url, upvotes, downvotes, net_score, created_at")
+        .eq("user_id", user.profile.id)
+        .order("created_at", { ascending: false })
 
-      // Demo awards
-      const demoAwards = [
-        {
-          id: "award_1",
-          award_type: "Most Viral",
-          award_title: "Most Viral Post - November 2024",
-          month: 11,
-          year: 2024,
-          created_at: new Date().toISOString(),
-        },
-      ]
+      if (confError) throw confError
 
-      setConfessions(demoConfessions)
-      setAwards(demoAwards)
+      setConfessions((confData ?? []) as UserConfession[])
+
+      // Fetch any awards received by the user
+      const { data: awardData, error: awardError } = await supabase
+        .from("awards")
+        .select("id, award_type, award_title, month, year, created_at")
+        .eq("user_id", user.profile.id)
+        .order("created_at", { ascending: false })
+
+      if (awardError) throw awardError
+
+      setAwards((awardData ?? []) as UserAward[])
     } catch (error: any) {
       toast({
         title: "Error",
@@ -98,8 +82,13 @@ export function UserProfile({ user }: UserProfileProps) {
 
   const handleDeleteConfession = async (confessionId: string) => {
     try {
-      // Simulate deletion
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      const { error } = await supabase
+        .from("confessions")
+        .delete()
+        .eq("id", confessionId)
+        .eq("user_id", user.profile.id)
+
+      if (error) throw error
 
       toast({
         title: "Confession deleted",

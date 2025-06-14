@@ -57,41 +57,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    // Get initial session and user data
+    // Load current Supabase session & user profile
     const getInitialSession = async () => {
       try {
-        // Check for demo session first (client-side only)
-        if (typeof window !== 'undefined') {
-          const demoSessionStr = localStorage.getItem('demo_session')
-          const demoProfileStr = localStorage.getItem('demo_profile')
-          
-          if (demoSessionStr && demoProfileStr) {
-            try {
-              const demoSession = JSON.parse(demoSessionStr)
-              const demoProfile = JSON.parse(demoProfileStr)
-              
-              // Check if demo session is still valid
-              if (Date.now() < demoSession.expires_at) {
-                console.log('Demo session found and valid')
-                setSession(demoSession)
-                setUser(demoSession.user)
-                setProfile(demoProfile)
-                setLoading(false)
-                return // Exit early for demo session
-              } else {
-                // Clean up expired demo session
-                localStorage.removeItem('demo_session')
-                localStorage.removeItem('demo_profile')
-              }
-            } catch (error) {
-              console.error('Error parsing demo session:', error)
-              localStorage.removeItem('demo_session')
-              localStorage.removeItem('demo_profile')
-            }
-          }
-        }
-
-        // If no valid demo session, check Supabase
         const sessionData = await getSession()
         const userData = await getCurrentUser()
         
@@ -116,93 +84,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     getInitialSession()
 
-    // Listen for auth changes (this will work for real Supabase auth)
-    // For demo auth, we'll rely on manual state updates
-    const { data: { subscription } } = onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event, session)
-        setSession(session)
-        
-        if (session?.user) {
-          try {
-            const userData = await getCurrentUser()
-            if (userData) {
-              setUser(userData.user)
-              setProfile(userData.profile)
-            }
-          } catch (error) {
-            console.error('Error fetching user data on auth change:', error)
-          }
-        } else {
-          setUser(null)
-          setProfile(null)
-        }
-        
-        setLoading(false)
-      }
-    )
-
-    // Also listen for demo session changes via storage events
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'demo_session' || e.key === 'demo_profile') {
-        console.log('Demo session storage changed')
-        // Refresh user data when demo session changes
-        refreshProfile()
-      }
-    }
-
-    // Listen for demo session changes in the same tab
-    const handleDemoSessionChange = () => {
-      console.log('Demo session changed, refreshing...')
-      refreshProfile()
-    }
-
+    // Listen for auth changes (supabase provides real-time listener)
     if (typeof window !== 'undefined') {
-      window.addEventListener('storage', handleStorageChange)
-      window.addEventListener('demo-session-change', handleDemoSessionChange)
+      window.addEventListener('storage', () => refreshProfile())
     }
 
     return () => {
-      subscription.unsubscribe()
       if (typeof window !== 'undefined') {
-        window.removeEventListener('storage', handleStorageChange)
-        window.removeEventListener('demo-session-change', handleDemoSessionChange)
+        window.removeEventListener('storage', () => refreshProfile())
       }
     }
   }, [])
 
   const signIn = async (email: string, password: string) => {
     try {
-      const result = await authSignIn(email, password)
-      
-      // Check if this was a demo login by looking for demo session
-      if (typeof window !== 'undefined') {
-        const demoSessionStr = localStorage.getItem('demo_session')
-        const demoProfileStr = localStorage.getItem('demo_profile')
-        
-        if (demoSessionStr && demoProfileStr) {
-          // This was a demo login, manually update state
-          const demoSession = JSON.parse(demoSessionStr)
-          const demoProfile = JSON.parse(demoProfileStr)
-          
-          console.log('Demo login successful, updating state')
-          setSession(demoSession)
-          setUser(demoSession.user)
-          setProfile(demoProfile)
-          
-          // Dispatch custom event for other components
-          window.dispatchEvent(new CustomEvent('demo-session-change'))
-          return
-        }
-      }
-      
-      // For real Supabase auth, refresh profile
-      if (result && 'data' in result && result.data?.user) {
-        await refreshProfile()
-      } else if (result && 'user' in result) {
-        // Real Supabase auth result
-        await refreshProfile()
-      }
+      await authSignIn(email, password)
+      // Always refresh the profile after a successful sign-in
+      await refreshProfile()
     } catch (error) {
       throw error
     }
@@ -210,36 +108,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, inviteCode: string) => {
     try {
-      const result = await authSignUp(email, password, inviteCode)
-      
-      // Check if this was a demo signup by looking for demo session
-      if (typeof window !== 'undefined') {
-        const demoSessionStr = localStorage.getItem('demo_session')
-        const demoProfileStr = localStorage.getItem('demo_profile')
-        
-        if (demoSessionStr && demoProfileStr) {
-          // This was a demo signup, manually update state
-          const demoSession = JSON.parse(demoSessionStr)
-          const demoProfile = JSON.parse(demoProfileStr)
-          
-          console.log('Demo signup successful, updating state')
-          setSession(demoSession)
-          setUser(demoSession.user)
-          setProfile(demoProfile)
-          
-          // Dispatch custom event for other components
-          window.dispatchEvent(new CustomEvent('demo-session-change'))
-          return
-        }
-      }
-      
-      // For real Supabase auth, refresh profile
-      if (result && 'data' in result && result.data?.user) {
-        await refreshProfile()
-      } else if (result && 'user' in result) {
-        // Real Supabase auth result
-        await refreshProfile()
-      }
+      await authSignUp(email, password, inviteCode)
+      // Refresh profile after sign-up completes
+      await refreshProfile()
     } catch (error) {
       throw error
     }
@@ -247,8 +118,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await authSignOut()
-    
-    // Manually clear state for demo accounts
     setUser(null)
     setProfile(null)
     setSession(null)
