@@ -13,156 +13,19 @@ export const getToxicityTier = (score: number): { name: string; color: string; e
   return { name: "Whisperer", color: "text-indigo-600 border-indigo-500", emoji: "🤫" }
 }
 
-// Demo user credentials for bypass
-const DEMO_USERS = [
-  {
-    email: "demo@spilledin.com",
-    password: "demo123",
-    id: "demo-user-1",
-    profile: {
-      id: "demo-user-1",
-      company_id: "demo-company-1",
-      anonymous_username: "DemoDeity99",
-      toxicity_score: 1250,
-      total_upvotes: 89,
-      total_downvotes: 23,
-      created_at: new Date().toISOString(),
-      companies: {
-        name: "Demo Corp",
-        invite_code: "DEMO2024"
-      }
-    }
-  },
-  {
-    email: "test@spilledin.com",
-    password: "test123",
-    id: "demo-user-2",
-    profile: {
-      id: "demo-user-2",
-      company_id: "demo-company-1",
-      anonymous_username: "TestTrouble88",
-      toxicity_score: 456,
-      total_upvotes: 45,
-      total_downvotes: 12,
-      created_at: new Date().toISOString(),
-      companies: {
-        name: "Demo Corp",
-        invite_code: "DEMO2024"
-      }
-    }
-  }
-]
-
-// Check if email is a demo account
-const isDemoAccount = (email: string): boolean => {
-  return DEMO_USERS.some(user => user.email === email)
-}
-
-// Get demo user by email
-const getDemoUser = (email: string, password: string) => {
-  return DEMO_USERS.find(user => user.email === email && user.password === password)
-}
-
-// Store demo session in localStorage
-const storeDemoSession = (demoUser: any) => {
-  const session = {
-    user: {
-      id: demoUser.id,
-      email: demoUser.email,
-      created_at: new Date().toISOString(),
-      app_metadata: {},
-      user_metadata: {},
-      aud: "authenticated",
-      role: "authenticated"
-    },
-    access_token: `demo-token-${demoUser.id}`,
-    refresh_token: `demo-refresh-${demoUser.id}`,
-    expires_at: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
-    token_type: "bearer"
-  }
-  
-  localStorage.setItem('demo_session', JSON.stringify(session))
-  localStorage.setItem('demo_profile', JSON.stringify(demoUser.profile))
-  return session
-}
-
-// Get demo session from localStorage
-const getDemoSession = () => {
-  try {
-    const sessionStr = localStorage.getItem('demo_session')
-    const profileStr = localStorage.getItem('demo_profile')
-    
-    if (!sessionStr || !profileStr) return null
-    
-    const session = JSON.parse(sessionStr)
-    const profile = JSON.parse(profileStr)
-    
-    // Check if session is expired
-    if (Date.now() > session.expires_at) {
-      localStorage.removeItem('demo_session')
-      localStorage.removeItem('demo_profile')
-      return null
-    }
-    
-    return { session, profile }
-  } catch {
-    return null
-  }
-}
-
-// Clear demo session
-const clearDemoSession = () => {
-  localStorage.removeItem('demo_session')
-  localStorage.removeItem('demo_profile')
-}
-
 export const signUp = async (email: string, password: string, inviteCode: string) => {
-  // Check if it's a demo account trying to sign up
-  if (isDemoAccount(email)) {
-    throw new Error("Demo accounts already exist. Please use the login form instead.")
+  // First, verify the invite code exists in the database
+  const { data: company, error: companyError } = await supabase
+    .from("companies")
+    .select("id")
+    .eq("invite_code", inviteCode)
+    .single()
+
+  if (companyError || !company) {
+    throw new Error("Invalid invite code")
   }
 
-  // For demo purposes, allow any invite code that starts with "DEMO" or is in the demo list
-  const demoInviteCodes = ["TECH2024", "STARTUP123", "MEGA456", "DEMO2024"]
-  if (!demoInviteCodes.includes(inviteCode.toUpperCase())) {
-    // First, verify the invite code exists in the database
-    const { data: company, error: companyError } = await supabase
-      .from("companies")
-      .select("id")
-      .eq("invite_code", inviteCode)
-      .single()
-
-    if (companyError || !company) {
-      throw new Error("Invalid invite code")
-    }
-  }
-
-  // For demo purposes, create a mock user without real Supabase signup
-  if (inviteCode.toUpperCase() === "DEMO2024" || demoInviteCodes.includes(inviteCode.toUpperCase())) {
-    // Create a demo user
-    const demoUser = {
-      id: `demo-user-${Date.now()}`,
-      email: email,
-      profile: {
-        id: `demo-user-${Date.now()}`,
-        company_id: "demo-company-1",
-        anonymous_username: `DemoUser${Math.floor(Math.random() * 100)}`,
-        toxicity_score: 0,
-        total_upvotes: 0,
-        total_downvotes: 0,
-        created_at: new Date().toISOString(),
-        companies: {
-          name: "Demo Corp",
-          invite_code: inviteCode.toUpperCase()
-        }
-      }
-    }
-
-    const session = storeDemoSession(demoUser)
-    return { data: { user: session.user, session }, error: null }
-  }
-
-  // Real Supabase signup for production
+  // Supabase signup
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -179,7 +42,7 @@ export const signUp = async (email: string, password: string, inviteCode: string
     // Create user profile
     const { error: profileError } = await supabase.from("user_profiles").insert({
       id: authData.user.id,
-      company_id: "demo-company-1", // Use demo company for now
+      company_id: company.id,
       anonymous_username: usernameData,
     })
 
@@ -190,18 +53,6 @@ export const signUp = async (email: string, password: string, inviteCode: string
 }
 
 export const signIn = async (email: string, password: string) => {
-  // Check if it's a demo account
-  if (isDemoAccount(email)) {
-    const demoUser = getDemoUser(email, password)
-    if (!demoUser) {
-      throw new Error("Invalid demo credentials")
-    }
-    
-    const session = storeDemoSession(demoUser)
-    return { data: { user: session.user, session }, error: null }
-  }
-
-  // Real Supabase signin for production
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -212,22 +63,11 @@ export const signIn = async (email: string, password: string) => {
 }
 
 export const signOut = async () => {
-  // Clear demo session if it exists
-  clearDemoSession()
-  
-  // Also sign out from Supabase
   const { error } = await supabase.auth.signOut()
   if (error) throw error
 }
 
 export const getCurrentUser = async () => {
-  // First check for demo session
-  const demoData = getDemoSession()
-  if (demoData) {
-    return { user: demoData.session.user, profile: demoData.profile }
-  }
-
-  // Check real Supabase session
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -252,24 +92,12 @@ export const getCurrentUser = async () => {
 }
 
 export const getSession = async () => {
-  // First check for demo session
-  const demoData = getDemoSession()
-  if (demoData) {
-    return demoData.session
-  }
-
-  // Check real Supabase session
   const { data: { session }, error } = await supabase.auth.getSession()
   if (error) throw error
   return session
 }
 
-// Additional auth helper functions
 export const resetPassword = async (email: string) => {
-  if (isDemoAccount(email)) {
-    throw new Error("Password reset is not available for demo accounts. Use the demo credentials to login.")
-  }
-
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/reset-password`,
   })
@@ -288,13 +116,4 @@ export const updatePassword = async (newPassword: string) => {
 // Auth state change listener
 export const onAuthStateChange = (callback: (event: string, session: any) => void) => {
   return supabase.auth.onAuthStateChange(callback)
-}
-
-// Demo helper functions
-export const getDemoCredentials = () => {
-  return DEMO_USERS.map(user => ({
-    email: user.email,
-    password: user.password,
-    username: user.profile.anonymous_username
-  }))
 }
