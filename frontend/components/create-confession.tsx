@@ -144,7 +144,7 @@ export function CreateConfession({ userId, companyId, onSuccess }: CreateConfess
               className="min-h-32 resize-none"
               maxLength={1000}
             />
-            <div className="text-right text-sm text-gray-500">{content.length}/1000 characters</div>
+            <div className="text-right text-sm text-muted-foreground">{content.length}/1000 characters</div>
           </div>
 
           <div className="space-y-4">
@@ -168,11 +168,11 @@ export function CreateConfession({ userId, companyId, onSuccess }: CreateConfess
                 </Button>
               </div>
             ) : (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <Upload className="mx-auto h-12 w-12 text-gray-400" />
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
                 <div className="mt-4">
                   <Label htmlFor="image-upload" className="cursor-pointer">
-                    <span className="text-sm text-gray-600">Click to upload an image</span>
+                    <span className="text-sm text-muted-foreground">Click to upload an image</span>
                     <Input
                       id="image-upload"
                       type="file"
@@ -182,7 +182,7 @@ export function CreateConfession({ userId, companyId, onSuccess }: CreateConfess
                     />
                   </Label>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF up to 5MB</p>
+                <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 5MB</p>
               </div>
             )}
           </div>

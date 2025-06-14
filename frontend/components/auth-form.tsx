@@ -2,14 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-import { signIn, signUp } from "@/lib/auth"
+import { useAuth } from "@/hooks/useAuth"
 import { Loader2 } from "lucide-react"
 
 interface AuthFormProps {
@@ -19,6 +19,16 @@ interface AuthFormProps {
 export function AuthForm({ onSuccess }: AuthFormProps) {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
+  const { signIn, signUp, user } = useAuth()
+
+  // Watch for user state changes and call onSuccess when user is authenticated
+  useEffect(() => {
+    if (user && loading) {
+      // User is authenticated and we were in loading state, so auth was successful
+      setLoading(false)
+      onSuccess?.()
+    }
+  }, [user, loading, onSuccess])
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -34,14 +44,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         title: "Welcome back!",
         description: "You have successfully signed in.",
       })
-      onSuccess?.()
+      // Don't call onSuccess here - let the useEffect handle it
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       })
-    } finally {
       setLoading(false)
     }
   }
@@ -61,14 +70,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         title: "Account created!",
         description: "Welcome to SpilledIn! You can now start confessing.",
       })
-      onSuccess?.()
+      // Don't call onSuccess here - let the useEffect handle it
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       })
-    } finally {
       setLoading(false)
     }
   }
