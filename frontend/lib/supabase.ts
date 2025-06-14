@@ -158,7 +158,7 @@ export type Database = {
       search_confessions: {
         Args: {
           search_query?: string
-          company_filter?: string
+          company_uuid?: string
           sort_by?: string
           limit_count?: number
           offset_count?: number
@@ -223,7 +223,6 @@ export type Database = {
 
 // Helper types
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
 
 // Specific table types for easier use
 export type Company = Tables<'companies'>
@@ -253,7 +252,7 @@ export type UserProfileWithCompany = UserProfile & {
 export const getConfessions = async (sortBy: 'popular' | 'latest' = 'popular', limit = 20, offset = 0) => {
   const { data, error } = await supabase.rpc('search_confessions', {
     search_query: null,
-    company_filter: null,
+    company_uuid: null,
     sort_by: sortBy,
     limit_count: limit,
     offset_count: offset
@@ -266,7 +265,7 @@ export const getConfessions = async (sortBy: 'popular' | 'latest' = 'popular', l
 export const searchConfessions = async (query: string, sortBy: 'popular' | 'latest' = 'popular', limit = 20, offset = 0) => {
   const { data, error } = await supabase.rpc('search_confessions', {
     search_query: query,
-    company_filter: null,
+    company_uuid: null,
     sort_by: sortBy,
     limit_count: limit,
     offset_count: offset
@@ -423,21 +422,35 @@ export const getUserConfessions = async (userId?: string, limit = 20, offset = 0
   
   if (!targetUserId) throw new Error('User not found')
 
-  const { data, error } = await supabase
+  // Fetch confessions first
+  const { data: confessions, error: confessionsError } = await supabase
     .from('confessions')
-    .select(`
-      *,
-      user_profiles!inner (
-        anonymous_username,
-        toxicity_score
-      )
-    `)
+    .select('*')
     .eq('user_id', targetUserId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
-  if (error) throw error
-  return data
+  if (confessionsError) throw confessionsError
+
+  // Fetch user profile separately
+  const { data: userProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('anonymous_username, toxicity_score')
+    .eq('id', targetUserId)
+    .single()
+
+  if (profileError) throw profileError
+
+  // Combine the data
+  const confessionsWithProfile = confessions?.map(confession => ({
+    ...confession,
+    user_profiles: {
+      anonymous_username: userProfile.anonymous_username,
+      toxicity_score: userProfile.toxicity_score
+    }
+  })) || []
+
+  return confessionsWithProfile
 }
 
 export const getTopUsers = async (limit = 10) => {
