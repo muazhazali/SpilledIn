@@ -105,6 +105,37 @@ The script creates sample companies with these invite codes:
 - `INNOVATE789` - InnovateLab
 - `DIGITAL2024` - DigitalFirst
 
+## 🌱 Loading Sample Data
+
+After setting up the database, you can load realistic sample data for testing:
+
+### Using the Comprehensive Seed File
+
+1. **Run the seed script** in your Supabase SQL Editor:
+   - Copy the contents of `seed-data.sql`
+   - Paste and run in the SQL Editor
+
+2. **What gets loaded:**
+   - **15 sample users** across 5 companies with realistic anonymous usernames
+   - **15 sample confessions** with various vote scores and engagement levels
+   - **17 sample votes** showing user interactions
+   - **9 sample awards** from recent months for Toxic Wrapped testing
+
+### Sample Data Includes:
+
+**Viral Confessions:**
+- "I accidentally sent a meme to the CEO..." (89 upvotes)
+- "I've been pretending to understand blockchain..." (67 upvotes)
+- "Our startup's 'revolutionary AI' is just me..." (78 upvotes)
+
+**Controversial Confessions:**
+- "I think pineapple on pizza is actually good..." (-26 net score)
+- "I actually enjoy our 9 AM Monday meetings..." (-23 net score)
+
+**Recent Activity:**
+- Fresh confessions from the last 24 hours for testing real-time features
+- Recent votes and awards for current month statistics
+
 ## 🧪 Testing the Setup
 
 ### 1. Test User Registration
@@ -115,8 +146,11 @@ SELECT generate_anonymous_username();
 
 ### 2. Test Search Function
 ```sql
--- Search for confessions
-SELECT * FROM search_confessions('test', NULL, 'popular', 10, 0);
+-- Search for confessions containing "blockchain"
+SELECT * FROM search_confessions('blockchain', NULL, 'popular', 10, 0);
+
+-- Search by username
+SELECT * FROM search_confessions('DramaDeity99', NULL, 'popular', 10, 0);
 ```
 
 ### 3. Test Monthly Stats
@@ -126,6 +160,26 @@ SELECT get_monthly_stats(
     EXTRACT(MONTH FROM NOW())::INTEGER,
     EXTRACT(YEAR FROM NOW())::INTEGER
 );
+
+-- Get November 2024 stats (has sample data)
+SELECT get_monthly_stats(11, 2024);
+```
+
+### 4. Test Toxicity System
+```sql
+-- View users by toxicity score
+SELECT anonymous_username, toxicity_score, total_upvotes, total_downvotes
+FROM user_profiles 
+ORDER BY toxicity_score DESC;
+
+-- Test toxicity tier function
+SELECT anonymous_username, toxicity_score,
+       (SELECT json_build_object(
+           'name', (getToxicityTier(toxicity_score)).name,
+           'emoji', (getToxicityTier(toxicity_score)).emoji
+       )) as tier
+FROM user_profiles 
+ORDER BY toxicity_score DESC;
 ```
 
 ## 🔍 Troubleshooting
