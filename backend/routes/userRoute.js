@@ -29,15 +29,15 @@ const authenticateUser = async (req, res, next) => {
 router.get('/profile', authenticateUser, async (req, res) => {
   try {
     const { data: profile, error } = await supabase
-      .from('user_profiles')
+      .from('users')
       .select(`
         *,
-        companies (
+        Company (
           name,
-          invite_code
+          registration_link
         )
       `)
-      .eq('id', req.user.id)
+      .eq('user_id', req.user.id)
       .single();
 
     if (error) {
@@ -46,14 +46,14 @@ router.get('/profile', authenticateUser, async (req, res) => {
 
     // Get confession count
     const { count: confessionCount } = await supabase
-      .from('confessions')
+      .from('Confession')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', req.user.id);
 
     // Get recent activity
     const { data: recentConfessions } = await supabase
-      .from('confessions')
-      .select('id, content, created_at, upvotes, downvotes')
+      .from('Confession')
+      .select('confession_id, content, datetime_posted, upvote, downvote')
       .eq('user_id', req.user.id)
       .order('created_at', { ascending: false })
       .limit(5);
@@ -81,9 +81,9 @@ router.put('/profile', authenticateUser, async (req, res) => {
     }
 
     const { data, error } = await supabase
-      .from('user_profiles')
+      .from('users')
       .update({ anonymous_username })
-      .eq('id', req.user.id)
+      .eq('user_id', req.user.id)
       .select()
       .single();
 
@@ -106,16 +106,16 @@ router.get('/toxicity-history', authenticateUser, async (req, res) => {
     // This would require a toxicity_history table
     // For now, return current score
     const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('toxicity_score, created_at')
-      .eq('id', req.user.id)
+      .from('users')
+      .select('toxicity_level, date_joined')
+      .eq('user_id', req.user.id)
       .single();
 
     res.json({
       history: [
         {
-          date: profile.created_at,
-          score: profile.toxicity_score,
+          date: profile.date_joined,
+          score: profile.toxicity_level,
           change: 0
         }
       ]
@@ -131,9 +131,9 @@ router.post('/regenerate-username', authenticateUser, async (req, res) => {
     const { data: newUsername } = await supabase.rpc('generate_anonymous_username');
 
     const { data, error } = await supabase
-      .from('user_profiles')
+      .from('users')
       .update({ anonymous_username: newUsername })
-      .eq('id', req.user.id)
+      .eq('user_id', req.user.id)
       .select()
       .single();
 
