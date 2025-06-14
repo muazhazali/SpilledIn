@@ -36,14 +36,3 @@ export async function fetchConfessions(searchQuery, sortBy, currentUserId) {
 
   return confessionsWithVotes
 }
-
-// Delete a confession owned by the current user
-export async function deleteConfession(confessionId, currentUserId) {
-  const { error } = await supabase
-    .from("Confession")
-    .delete()
-    .eq("confession_id", confessionId)
-    .eq("user_id", currentUserId)
-
-  if (error) throw error
-}
