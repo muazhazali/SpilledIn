@@ -77,6 +77,20 @@ export default function RegisterPage() {
           <CardDescription>Join the anonymous confession community.</CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Demo account info */}
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="font-semibold text-blue-800 mb-2">🎮 Try Demo First?</h3>
+            <div className="text-sm text-blue-700 space-y-2">
+              <p>Already have demo accounts ready to use!</p>
+              <Link 
+                href="/login" 
+                className="inline-block bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium hover:bg-blue-700 transition-colors"
+              >
+                Use Demo Account →
+              </Link>
+            </div>
+          </div>
+
           {/* Info about invite codes */}
           <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
             <div className="flex items-start space-x-2">
@@ -86,7 +100,7 @@ export default function RegisterPage() {
                 <div className="text-sm text-amber-700 space-y-1">
                   <p>You need a valid company invite code to join.</p>
                   <p>
-                    <strong>Demo codes:</strong> TECH2024, STARTUP123, MEGA456
+                    <strong>Demo codes:</strong> TECH2024, STARTUP123, MEGA456, DEMO2024
                   </p>
                 </div>
               </div>

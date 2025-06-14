@@ -2,8 +2,15 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
 import { UserProfileWithCompany } from '@/lib/supabase'
+import { 
+  signIn as authSignIn, 
+  signUp as authSignUp, 
+  signOut as authSignOut, 
+  getCurrentUser, 
+  getSession,
+  onAuthStateChange 
+} from '@/lib/auth'
 
 interface AuthContextType {
   user: User | null
@@ -32,48 +39,76 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchProfile = async (userId: string) => {
+  const refreshProfile = async () => {
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select(`
-          *,
-          companies (
-            name,
-            invite_code
-          )
-        `)
-        .eq('id', userId)
-        .single()
-
-      if (error) throw error
-      setProfile(data as UserProfileWithCompany)
+      const userData = await getCurrentUser()
+      if (userData) {
+        setUser(userData.user)
+        setProfile(userData.profile)
+      } else {
+        setUser(null)
+        setProfile(null)
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error)
+      console.error('Error refreshing profile:', error)
+      setUser(null)
       setProfile(null)
     }
   }
 
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id)
-    }
-  }
-
   useEffect(() => {
-    // Get initial session
+    // Get initial session and user data
     const getInitialSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      
-      if (error) {
-        console.error('Error getting session:', error)
-      } else {
-        setSession(session)
-        setUser(session?.user ?? null)
-        
-        if (session?.user) {
-          await fetchProfile(session.user.id)
+      try {
+        // Check for demo session first (client-side only)
+        if (typeof window !== 'undefined') {
+          const demoSessionStr = localStorage.getItem('demo_session')
+          const demoProfileStr = localStorage.getItem('demo_profile')
+          
+          if (demoSessionStr && demoProfileStr) {
+            try {
+              const demoSession = JSON.parse(demoSessionStr)
+              const demoProfile = JSON.parse(demoProfileStr)
+              
+              // Check if demo session is still valid
+              if (Date.now() < demoSession.expires_at) {
+                console.log('Demo session found and valid')
+                setSession(demoSession)
+                setUser(demoSession.user)
+                setProfile(demoProfile)
+                setLoading(false)
+                return // Exit early for demo session
+              } else {
+                // Clean up expired demo session
+                localStorage.removeItem('demo_session')
+                localStorage.removeItem('demo_profile')
+              }
+            } catch (error) {
+              console.error('Error parsing demo session:', error)
+              localStorage.removeItem('demo_session')
+              localStorage.removeItem('demo_profile')
+            }
+          }
         }
+
+        // If no valid demo session, check Supabase
+        const sessionData = await getSession()
+        const userData = await getCurrentUser()
+        
+        setSession(sessionData)
+        
+        if (userData) {
+          setUser(userData.user)
+          setProfile(userData.profile)
+        } else {
+          setUser(null)
+          setProfile(null)
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error)
+        setSession(null)
+        setUser(null)
+        setProfile(null)
       }
       
       setLoading(false)
@@ -81,15 +116,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     getInitialSession()
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    // Listen for auth changes (this will work for real Supabase auth)
+    // For demo auth, we'll rely on manual state updates
+    const { data: { subscription } } = onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session)
         setSession(session)
-        setUser(session?.user ?? null)
         
         if (session?.user) {
-          await fetchProfile(session.user.id)
+          try {
+            const userData = await getCurrentUser()
+            if (userData) {
+              setUser(userData.user)
+              setProfile(userData.profile)
+            }
+          } catch (error) {
+            console.error('Error fetching user data on auth change:', error)
+          }
         } else {
+          setUser(null)
           setProfile(null)
         }
         
@@ -97,58 +142,116 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     )
 
-    return () => subscription.unsubscribe()
+    // Also listen for demo session changes via storage events
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'demo_session' || e.key === 'demo_profile') {
+        console.log('Demo session storage changed')
+        // Refresh user data when demo session changes
+        refreshProfile()
+      }
+    }
+
+    // Listen for demo session changes in the same tab
+    const handleDemoSessionChange = () => {
+      console.log('Demo session changed, refreshing...')
+      refreshProfile()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange)
+      window.addEventListener('demo-session-change', handleDemoSessionChange)
+    }
+
+    return () => {
+      subscription.unsubscribe()
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorageChange)
+        window.removeEventListener('demo-session-change', handleDemoSessionChange)
+      }
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) throw error
+    try {
+      const result = await authSignIn(email, password)
+      
+      // Check if this was a demo login by looking for demo session
+      if (typeof window !== 'undefined') {
+        const demoSessionStr = localStorage.getItem('demo_session')
+        const demoProfileStr = localStorage.getItem('demo_profile')
+        
+        if (demoSessionStr && demoProfileStr) {
+          // This was a demo login, manually update state
+          const demoSession = JSON.parse(demoSessionStr)
+          const demoProfile = JSON.parse(demoProfileStr)
+          
+          console.log('Demo login successful, updating state')
+          setSession(demoSession)
+          setUser(demoSession.user)
+          setProfile(demoProfile)
+          
+          // Dispatch custom event for other components
+          window.dispatchEvent(new CustomEvent('demo-session-change'))
+          return
+        }
+      }
+      
+      // For real Supabase auth, refresh profile
+      if (result && 'data' in result && result.data?.user) {
+        await refreshProfile()
+      } else if (result && 'user' in result) {
+        // Real Supabase auth result
+        await refreshProfile()
+      }
+    } catch (error) {
+      throw error
+    }
   }
 
   const signUp = async (email: string, password: string, inviteCode: string) => {
-    // First, verify the invite code exists
-    const { data: company, error: companyError } = await supabase
-      .from('companies')
-      .select('id')
-      .eq('invite_code', inviteCode)
-      .single()
-
-    if (companyError || !company) {
-      throw new Error('Invalid invite code')
-    }
-
-    // Sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-
-    if (authError) throw authError
-
-    if (authData.user) {
-      // Generate anonymous username using the database function
-      const { data: usernameData, error: usernameError } = await supabase.rpc('generate_anonymous_username')
-
-      if (usernameError) throw usernameError
-
-      // Create user profile
-      const { error: profileError } = await supabase.from('user_profiles').insert({
-        id: authData.user.id,
-        company_id: company.id,
-        anonymous_username: usernameData,
-      })
-
-      if (profileError) throw profileError
+    try {
+      const result = await authSignUp(email, password, inviteCode)
+      
+      // Check if this was a demo signup by looking for demo session
+      if (typeof window !== 'undefined') {
+        const demoSessionStr = localStorage.getItem('demo_session')
+        const demoProfileStr = localStorage.getItem('demo_profile')
+        
+        if (demoSessionStr && demoProfileStr) {
+          // This was a demo signup, manually update state
+          const demoSession = JSON.parse(demoSessionStr)
+          const demoProfile = JSON.parse(demoProfileStr)
+          
+          console.log('Demo signup successful, updating state')
+          setSession(demoSession)
+          setUser(demoSession.user)
+          setProfile(demoProfile)
+          
+          // Dispatch custom event for other components
+          window.dispatchEvent(new CustomEvent('demo-session-change'))
+          return
+        }
+      }
+      
+      // For real Supabase auth, refresh profile
+      if (result && 'data' in result && result.data?.user) {
+        await refreshProfile()
+      } else if (result && 'user' in result) {
+        // Real Supabase auth result
+        await refreshProfile()
+      }
+    } catch (error) {
+      throw error
     }
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    await authSignOut()
+    
+    // Manually clear state for demo accounts
+    setUser(null)
+    setProfile(null)
+    setSession(null)
   }
 
   const value = {
@@ -176,14 +279,19 @@ export const useSupabaseAuth = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      try {
+        const userData = await getCurrentUser()
+        setUser(userData?.user ?? null)
+      } catch (error) {
+        console.error('Error getting user:', error)
+        setUser(null)
+      }
       setLoading(false)
     }
 
     getUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null)
         setLoading(false)

@@ -2,6 +2,27 @@
 
 This is the frontend application for SpilledIn, an anonymous confession platform built with Next.js 15 and integrated with Supabase for backend services.
 
+## 🎮 Demo Mode
+
+**Try the app instantly without any setup!** The application includes a demo mode that bypasses real email verification and database requirements.
+
+### Demo Credentials:
+- **Email**: `demo@spilledin.com`
+- **Password**: `demo123`
+- **Alternative**: `test@spilledin.com` / `test123`
+
+### Demo Features:
+- ✅ Instant login without email verification
+- ✅ Pre-configured user profiles with toxicity scores
+- ✅ Works without Supabase database setup
+- ✅ Perfect for testing and development
+- ✅ Demo data persists in browser localStorage
+
+### Demo Invite Codes:
+For testing registration: `TECH2024`, `STARTUP123`, `MEGA456`, `DEMO2024`
+
+> **Note**: Demo mode stores data locally in your browser. Real production features require full Supabase setup.
+
 ## 🚀 Features
 
 - **Anonymous Confessions**: Users can post confessions anonymously with optional image uploads
