@@ -1,3 +1,5 @@
+'use client'
+
 import { supabase } from "./supabase"
 
 /**
@@ -36,8 +38,6 @@ export const signUp = async (email: string, password: string, inviteCode: string
 
   if (companyError || !company) {
     throw new Error("Invalid invite code")
-  if (companyError || !company) {
-    throw new Error("Invalid invite code")
   }
 
   // Step 2 – create auth user
@@ -52,7 +52,6 @@ export const signUp = async (email: string, password: string, inviteCode: string
 
     const { error: profileError } = await supabase.from("user_profiles").insert({
       id: authData.user.id,
-      company_id: company.id,
       company_id: company.id,
       anonymous_username: usernameData,
     })
