@@ -1,11 +1,27 @@
 'use client'
 
 import * as React from 'react'
+import { useState, useEffect } from 'react'
 import {
   ThemeProvider as NextThemesProvider,
   type ThemeProviderProps,
 } from 'next-themes'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    // Return children without theme provider during SSR
+    return <>{children}</>
+  }
+
+  return (
+    <NextThemesProvider {...props}>
+      {children}
+    </NextThemesProvider>
+  )
 }

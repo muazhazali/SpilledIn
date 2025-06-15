@@ -73,10 +73,7 @@ export function ToxicWrapped() {
           upvotes,
           downvotes,
           net_score,
-          user_profiles (
-            anonymous_username,
-            toxicity_score
-          )
+          user_id
         `)
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString())
@@ -84,6 +81,30 @@ export function ToxicWrapped() {
         .limit(5)
 
       if (confessionsError) throw confessionsError
+
+      // Fetch user profiles for the confession authors
+      const userIds = confessionsData?.map(c => c.user_id) || []
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("user_profiles")
+        .select("id, anonymous_username, toxicity_score")
+        .in("id", userIds)
+
+      if (profilesError) throw profilesError
+
+      // Combine confession data with user profiles
+      const confessionsWithProfiles = confessionsData?.map(confession => {
+        const userProfile = profilesData?.find(p => p.id === confession.user_id)
+        return {
+          ...confession,
+          user_profiles: userProfile ? {
+            anonymous_username: userProfile.anonymous_username,
+            toxicity_score: userProfile.toxicity_score
+          } : {
+            anonymous_username: "Unknown User",
+            toxicity_score: 0
+          }
+        }
+      }) || []
 
       // Fetch monthly statistics
       const { data: statsData, error: statsError } = await supabase
@@ -99,7 +120,7 @@ export function ToxicWrapped() {
       const avgToxicity = usersData?.reduce((sum, user) => sum + user.toxicity_score, 0) / (usersData?.length || 1)
 
       setTopUsers(usersData || [])
-      setTopConfessions(confessionsData || [])
+      setTopConfessions(confessionsWithProfiles)
       setMonthlyStats({
         total_confessions: totalConfessions,
         total_votes: usersData?.reduce((sum, user) => sum + user.total_upvotes + user.total_downvotes, 0) || 0,
@@ -140,12 +161,12 @@ export function ToxicWrapped() {
       <div className="space-y-6">
         <Card className="animate-pulse">
           <CardHeader>
-            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-6 bg-muted rounded w-1/3"></div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              <div className="h-4 bg-muted rounded"></div>
+              <div className="h-4 bg-muted rounded w-2/3"></div>
             </div>
           </CardContent>
         </Card>
@@ -211,19 +232,19 @@ export function ToxicWrapped() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600">{monthlyStats.total_confessions}</div>
-                <div className="text-sm text-gray-500">Total Confessions</div>
+                <div className="text-sm text-muted-foreground">Total Confessions</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">{monthlyStats.total_votes}</div>
-                <div className="text-sm text-gray-500">Total Votes</div>
+                <div className="text-sm text-muted-foreground">Total Votes</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-600">{monthlyStats.average_toxicity}</div>
-                <div className="text-sm text-gray-500">Avg Toxicity</div>
+                <div className="text-sm text-muted-foreground">Avg Toxicity</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-orange-600">{monthlyStats.most_active_day}</div>
-                <div className="text-sm text-gray-500">Most Active Day</div>
+                <div className="text-sm text-muted-foreground">Most Active Day</div>
               </div>
             </div>
           </CardContent>
@@ -247,10 +268,10 @@ export function ToxicWrapped() {
               return (
                 <div
                   key={user.anonymous_username}
-                  className={`flex items-center justify-between p-4 rounded-lg ${isTop3 ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200" : "bg-gray-50"}`}
+                  className={`flex items-center justify-between p-4 rounded-lg ${isTop3 ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200" : "bg-muted/50"}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`text-2xl font-bold ${isTop3 ? "text-yellow-600" : "text-gray-400"}`}>
+                    <div className={`text-2xl font-bold ${isTop3 ? "text-yellow-600" : "text-muted-foreground"}`}>
                       #{index + 1}
                     </div>
                     <Avatar className="h-10 w-10">
@@ -265,7 +286,7 @@ export function ToxicWrapped() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-purple-600">{user.toxicity_score}</div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {user.total_upvotes}↑ {user.total_downvotes}↓
                     </div>
                   </div>
@@ -290,7 +311,7 @@ export function ToxicWrapped() {
               const tier = getToxicityTier(confession.user_profiles.toxicity_score)
 
               return (
-                <div key={confession.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                <div key={confession.id} className="border rounded-lg p-4 hover:bg-muted/50">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="text-lg font-bold text-green-600">#{index + 1}</div>
@@ -308,13 +329,13 @@ export function ToxicWrapped() {
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-lg text-green-600">+{confession.net_score}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         {confession.upvotes}↑ {confession.downvotes}↓
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-gray-800 leading-relaxed">
+                  <p className="text-foreground leading-relaxed">
                     {confession.content.length > 200
                       ? `${confession.content.substring(0, 200)}...`
                       : confession.content}
@@ -339,14 +360,14 @@ export function ToxicWrapped() {
             <div className="text-center p-4 bg-white rounded-lg">
               <div className="text-2xl mb-2">🔥</div>
               <div className="font-medium">Hottest Drama</div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 {topConfessions[0]?.net_score || 0} net votes on a single confession
               </div>
             </div>
             <div className="text-center p-4 bg-white rounded-lg">
               <div className="text-2xl mb-2">👑</div>
               <div className="font-medium">Toxicity Champion</div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 {topUsers[0]?.anonymous_username || "No one yet"} leads with {topUsers[0]?.toxicity_score || 0} points
               </div>
             </div>

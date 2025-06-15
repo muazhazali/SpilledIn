@@ -177,13 +177,13 @@ export function ConfessionFeed({ searchQuery, currentUserId }: ConfessionFeedPro
         {[...Array(3)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardHeader className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-4 bg-muted rounded w-1/4"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded"></div>
+              <div className="h-4 bg-muted rounded w-3/4"></div>
               </div>
             </CardContent>
           </Card>
@@ -221,7 +221,7 @@ export function ConfessionFeed({ searchQuery, currentUserId }: ConfessionFeedPro
         {confessions.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <p className="text-gray-500">No confessions found.</p>
+              <p className="text-muted-foreground">No confessions found.</p>
             </CardContent>
           </Card>
         ) : (
@@ -246,7 +246,7 @@ export function ConfessionFeed({ searchQuery, currentUserId }: ConfessionFeedPro
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(confession.created_at), { addSuffix: true })}
                       </span>
                       {confession.is_own && (
@@ -264,7 +264,7 @@ export function ConfessionFeed({ searchQuery, currentUserId }: ConfessionFeedPro
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  <p className="text-gray-800 leading-relaxed">{confession.content}</p>
+                  <p className="text-foreground leading-relaxed">{confession.content}</p>
 
                   {confession.image_url && (
                     <img
@@ -297,7 +297,7 @@ export function ConfessionFeed({ searchQuery, currentUserId }: ConfessionFeedPro
                       </Button>
                     </div>
 
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       Net Score:{" "}
                       <span className={confession.net_score >= 0 ? "text-green-600" : "text-red-600"}>
                         {confession.net_score >= 0 ? "+" : ""}

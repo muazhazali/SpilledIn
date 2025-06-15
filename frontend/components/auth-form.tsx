@@ -2,23 +2,33 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-import { signIn, signUp } from "@/lib/auth"
+import { useAuth } from "@/hooks/useAuth"
 import { Loader2 } from "lucide-react"
 
 interface AuthFormProps {
-  onSuccess: () => void
+  onSuccess?: () => void
 }
 
 export function AuthForm({ onSuccess }: AuthFormProps) {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
+  const { signIn, signUp, user } = useAuth()
+
+  // Watch for user state changes and call onSuccess when user is authenticated
+  useEffect(() => {
+    if (user && loading) {
+      // User is authenticated and we were in loading state, so auth was successful
+      setLoading(false)
+      onSuccess?.()
+    }
+  }, [user, loading, onSuccess])
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -34,14 +44,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         title: "Welcome back!",
         description: "You have successfully signed in.",
       })
-      onSuccess()
+      // Don't call onSuccess here - let the useEffect handle it
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       })
-    } finally {
       setLoading(false)
     }
   }
@@ -61,14 +70,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         title: "Account created!",
         description: "Welcome to SpilledIn! You can now start confessing.",
       })
-      onSuccess()
+      // Don't call onSuccess here - let the useEffect handle it
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       })
-    } finally {
       setLoading(false)
     }
   }
@@ -83,19 +91,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           <CardDescription>Anonymous confessions. Toxic tiers. Monthly wrapped.</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Demo credentials info */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="font-semibold text-blue-800 mb-2">🎮 Demo Mode</h3>
-            <div className="text-sm text-blue-700 space-y-1">
-              <p>
-                <strong>Demo Login:</strong> demo@spilledin.com / demo123
-              </p>
-              <p>
-                <strong>Valid Invite Codes:</strong> TECH2024, STARTUP123, MEGA456
-              </p>
-              <p>Or create any account with a valid invite code!</p>
-            </div>
-          </div>
+          {/* Demo credentials info removed */}
 
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -111,8 +107,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     id="signin-email"
                     name="email"
                     type="email"
-                    placeholder="demo@spilledin.com"
-                    defaultValue="demo@spilledin.com"
+                    placeholder="you@example.com"
                     required
                   />
                 </div>
@@ -122,8 +117,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                     id="signin-password"
                     name="password"
                     type="password"
-                    placeholder="demo123"
-                    defaultValue="demo123"
+                    placeholder="••••••••"
                     required
                   />
                 </div>
@@ -146,7 +140,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="invite-code">Company Invite Code</Label>
-                  <Input id="invite-code" name="inviteCode" placeholder="TECH2024" defaultValue="TECH2024" required />
+                  <Input id="invite-code" name="inviteCode" placeholder="COMPANY_INVITE_CODE" required />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

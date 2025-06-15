@@ -9,6 +9,7 @@ import { getToxicityTier } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { Trophy, TrendingUp, TrendingDown, Calendar, Trash2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import { supabase } from "@/lib/supabase"
 
 interface UserProfileProps {
   user: any
@@ -43,48 +44,31 @@ export function UserProfile({ user }: UserProfileProps) {
     fetchUserData()
   }, [])
 
-  // Update user profile to show demo user data
+  // Fetch live data for this user from Supabase
 
   const fetchUserData = async () => {
     try {
-      // For demo, show some sample confessions for the current user
-      const demoConfessions = [
-        {
-          id: "my_conf_1",
-          content:
-            "I've been using the same password for everything since 2015. It's 'password123' and I'm too scared to change it now.",
-          image_url: null,
-          upvotes: 23,
-          downvotes: 45,
-          net_score: -22,
-          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: "my_conf_2",
-          content:
-            "I told my team I was 'researching' for 3 hours but I was actually watching cat videos. The research was very thorough though.",
-          image_url: null,
-          upvotes: 67,
-          downvotes: 12,
-          net_score: 55,
-          created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-        },
-      ]
+      // Fetch confessions authored by the current user
+      const { data: confData, error: confError } = await supabase
+        .from("confessions")
+        .select("id, content, image_url, upvotes, downvotes, net_score, created_at")
+        .eq("user_id", user.profile.id)
+        .order("created_at", { ascending: false })
 
-      // Demo awards
-      const demoAwards = [
-        {
-          id: "award_1",
-          award_type: "Most Viral",
-          award_title: "Most Viral Post - November 2024",
-          month: 11,
-          year: 2024,
-          created_at: new Date().toISOString(),
-        },
-      ]
+      if (confError) throw confError
 
-      setConfessions(demoConfessions)
-      setAwards(demoAwards)
+      setConfessions((confData ?? []) as UserConfession[])
+
+      // Fetch any awards received by the user
+      const { data: awardData, error: awardError } = await supabase
+        .from("awards")
+        .select("id, award_type, award_title, month, year, created_at")
+        .eq("user_id", user.profile.id)
+        .order("created_at", { ascending: false })
+
+      if (awardError) throw awardError
+
+      setAwards((awardData ?? []) as UserAward[])
     } catch (error: any) {
       toast({
         title: "Error",
@@ -98,8 +82,13 @@ export function UserProfile({ user }: UserProfileProps) {
 
   const handleDeleteConfession = async (confessionId: string) => {
     try {
-      // Simulate deletion
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      const { error } = await supabase
+        .from("confessions")
+        .delete()
+        .eq("id", confessionId)
+        .eq("user_id", user.profile.id)
+
+      if (error) throw error
 
       toast({
         title: "Confession deleted",
@@ -124,12 +113,12 @@ export function UserProfile({ user }: UserProfileProps) {
       <div className="space-y-6">
         <Card className="animate-pulse">
           <CardHeader>
-            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-6 bg-muted rounded w-1/3"></div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              <div className="h-4 bg-muted rounded"></div>
+              <div className="h-4 bg-muted rounded w-2/3"></div>
             </div>
           </CardContent>
         </Card>
@@ -160,28 +149,28 @@ export function UserProfile({ user }: UserProfileProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">{user.profile.toxicity_score}</div>
-              <div className="text-sm text-gray-500">Toxicity Score</div>
+              <div className="text-sm text-muted-foreground">Toxicity Score</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600 flex items-center justify-center gap-1">
                 <TrendingUp className="h-5 w-5" />
                 {user.profile.total_upvotes}
               </div>
-              <div className="text-sm text-gray-500">Total Upvotes</div>
+              <div className="text-sm text-muted-foreground">Total Upvotes</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600 flex items-center justify-center gap-1">
                 <TrendingDown className="h-5 w-5" />
                 {user.profile.total_downvotes}
               </div>
-              <div className="text-sm text-gray-500">Total Downvotes</div>
+              <div className="text-sm text-muted-foreground">Total Downvotes</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600 flex items-center justify-center gap-1">
                 <Calendar className="h-5 w-5" />
                 {confessions.length}
               </div>
-              <div className="text-sm text-gray-500">Confessions</div>
+              <div className="text-sm text-muted-foreground">Confessions</div>
             </div>
           </div>
         </CardContent>
@@ -207,7 +196,7 @@ export function UserProfile({ user }: UserProfileProps) {
                     <Trophy className="h-5 w-5 text-yellow-600" />
                     <div>
                       <div className="font-medium">{award.award_title}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {new Date(award.year, award.month - 1).toLocaleDateString("en-US", {
                           month: "long",
                           year: "numeric",
@@ -230,15 +219,15 @@ export function UserProfile({ user }: UserProfileProps) {
         </CardHeader>
         <CardContent>
           {confessions.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <p>You haven't posted any confessions yet.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {confessions.map((confession) => (
-                <div key={confession.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                <div key={confession.id} className="border rounded-lg p-4 hover:bg-muted/50">
                   <div className="flex justify-between items-start mb-3">
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       {formatDistanceToNow(new Date(confession.created_at), { addSuffix: true })}
                     </div>
                     <Button
@@ -251,7 +240,7 @@ export function UserProfile({ user }: UserProfileProps) {
                     </Button>
                   </div>
 
-                  <p className="text-gray-800 mb-3">{confession.content}</p>
+                  <p className="text-foreground mb-3">{confession.content}</p>
 
                   {confession.image_url && (
                     <img

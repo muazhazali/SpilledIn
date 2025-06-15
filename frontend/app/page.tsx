@@ -1,43 +1,30 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { getCurrentUser } from "@/lib/auth"
-import { AuthForm } from "@/components/auth-form"
-import { Dashboard } from "@/components/dashboard"
+import { useAuth } from "@/hooks/useAuth"
 import { Loader2 } from "lucide-react"
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
-    try {
-      const userData = await getCurrentUser()
-      setUser(userData)
-    } catch (error) {
-      console.error("Error checking user:", error)
-    } finally {
-      setLoading(false)
+    if (!loading) {
+      if (user) {
+        router.push('/dashboard')
+      } else {
+        router.push('/login')
+      }
     }
-  }
+  }, [user, loading, router])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
+        <p className="text-muted-foreground">Loading SpilledIn...</p>
       </div>
-    )
-  }
-
-  if (!user) {
-    return <AuthForm onSuccess={checkUser} />
-  }
-
-  return <Dashboard user={user} />
+    </div>
+  )
 }
