@@ -46,39 +46,58 @@ export function ConfessionFeed({ searchQuery, currentUserId }: ConfessionFeedPro
   const fetchConfessions = async () => {
     setLoading(true)
     try {
-      let query = supabase.from("confessions").select(`
-          *,
-          user_profiles (
-            anonymous_username,
-            toxicity_score
-          )
-        `)
-
-      // Add search filter (simplified for demo)
+      // Use the search_confessions function from the database which handles complex search properly
       if (searchQuery.trim()) {
-        query = query.or(`content.ilike.%${searchQuery}%,user_profiles.anonymous_username.ilike.%${searchQuery}%`)
-      }
+        const { data, error } = await supabase.rpc('search_confessions', {
+          search_query: searchQuery,
+          sort_by: sortBy,
+          limit_count: 20,
+          offset_count: 0
+        })
 
-      // Add sorting
-      if (sortBy === "popular") {
-        query = query.order("net_score", { ascending: false })
-      } else {
-        query = query.order("created_at", { ascending: false })
-      }
+        if (error) throw error
 
-      const { data, error } = await query
-
-      if (error) throw error
-
-      // For demo, we don't need to fetch votes separately since they're mocked
-      const confessionsWithVotes =
-        data?.map((confession) => ({
+        const confessionsWithVotes = data?.map((confession: any) => ({
           ...confession,
-          user_vote: null, // No votes in demo
-          is_own: confession.user_id === currentUserId,
+          user_profiles: {
+            anonymous_username: confession.anonymous_username,
+            toxicity_score: confession.toxicity_score
+          },
+          user_vote: confession.user_vote,
+          is_own: confession.is_own,
         })) || []
 
-      setConfessions(confessionsWithVotes)
+        setConfessions(confessionsWithVotes)
+      } else {
+        // No search query, use regular select
+        let query = supabase.from("confessions").select(`
+            *,
+            user_profiles (
+              anonymous_username,
+              toxicity_score
+            )
+          `)
+
+        // Add sorting
+        if (sortBy === "popular") {
+          query = query.order("net_score", { ascending: false })
+        } else {
+          query = query.order("created_at", { ascending: false })
+        }
+
+        const { data, error } = await query
+
+        if (error) throw error
+
+        const confessionsWithVotes =
+          data?.map((confession) => ({
+            ...confession,
+            user_vote: null, // No votes in demo
+            is_own: confession.user_id === currentUserId,
+          })) || []
+
+        setConfessions(confessionsWithVotes)
+      }
     } catch (error: any) {
       toast({
         title: "Error",
