@@ -6,16 +6,16 @@ import { supabase } from "./supabase"
  * Utility: map a toxicity score to a tier label & styling helpers
  */
 export const getToxicityTier = (score: number): { name: string; color: string; emoji: string } => {
-  if (score >= 1000) return { name: "Drama Deity", color: "text-purple-600 border-purple-500", emoji: "👑" }
-  if (score >= 500) return { name: "Chaos Champion", color: "text-red-600 border-red-500", emoji: "🔥" }
-  if (score >= 250) return { name: "Trouble Maker", color: "text-orange-600 border-orange-500", emoji: "😈" }
-  if (score >= 100) return { name: "Stirrer", color: "text-yellow-600 border-yellow-500", emoji: "🌪️" }
-  if (score >= 50) return { name: "Instigator", color: "text-amber-600 border-amber-500", emoji: "⚡" }
-  if (score >= 0) return { name: "Neutral", color: "text-gray-600 border-gray-500", emoji: "😐" }
-  if (score >= -50) return { name: "Peacekeeper", color: "text-blue-600 border-blue-500", emoji: "🕊️" }
-  if (score >= -100) return { name: "Harmony Helper", color: "text-green-600 border-green-500", emoji: "🌱" }
-  if (score >= -250) return { name: "Zen Master", color: "text-emerald-600 border-emerald-500", emoji: "🧘" }
-  return { name: "Whisperer", color: "text-indigo-600 border-indigo-500", emoji: "🤫" }
+  if (score >= 1000) return { name: "Drama Deity", color: "bg-purple-100 text-purple-800 border-purple-300", emoji: "👑" }
+  if (score >= 500) return { name: "Chaos Champion", color: "bg-red-100 text-red-800 border-red-300", emoji: "🔥" }
+  if (score >= 250) return { name: "Trouble Maker", color: "bg-orange-100 text-orange-800 border-orange-300", emoji: "😈" }
+  if (score >= 100) return { name: "Stirrer", color: "bg-yellow-100 text-yellow-800 border-yellow-300", emoji: "🌪️" }
+  if (score >= 50) return { name: "Instigator", color: "bg-amber-100 text-amber-800 border-amber-300", emoji: "⚡" }
+  if (score >= 0) return { name: "Neutral", color: "bg-gray-100 text-gray-800 border-gray-300", emoji: "😐" }
+  if (score >= -50) return { name: "Peacekeeper", color: "bg-blue-100 text-blue-800 border-blue-300", emoji: "🕊️" }
+  if (score >= -100) return { name: "Harmony Helper", color: "bg-green-100 text-green-800 border-green-300", emoji: "🌱" }
+  if (score >= -250) return { name: "Zen Master", color: "bg-emerald-100 text-emerald-800 border-emerald-300", emoji: "🧘" }
+  return { name: "Whisperer", color: "bg-indigo-100 text-indigo-800 border-indigo-300", emoji: "🤫" }
 }
 
 // ---------------------------------------------------------------------------
