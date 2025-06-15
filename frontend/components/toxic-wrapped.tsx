@@ -219,6 +219,46 @@ export function ToxicWrapped() {
         </CardContent>
       </Card>
 
+      {/* Fun Facts - Highlighted Section */}
+      <Card className="bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 text-white shadow-2xl border-0 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+        <CardHeader className="relative z-10">
+          <CardTitle className="text-2xl font-bold flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-full">
+              <Trophy className="h-6 w-6" />
+            </div>
+            🎉 {months[selectedMonth - 1]} Highlights
+          </CardTitle>
+          <p className="text-white/90">The most dramatic moments this month</p>
+        </CardHeader>
+        <CardContent className="relative z-10">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="text-center p-6 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+              <div className="text-4xl mb-3 animate-bounce">🔥</div>
+              <div className="text-xl font-bold mb-2">Hottest Drama</div>
+              <div className="text-3xl font-extrabold text-yellow-200 mb-1">
+                {topConfessions[0]?.net_score || 0}
+              </div>
+              <div className="text-sm text-white/80">
+                net votes on a single confession
+              </div>
+            </div>
+            <div className="text-center p-6 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+              <div className="text-4xl mb-3 animate-pulse">👑</div>
+              <div className="text-xl font-bold mb-2">Toxicity Champion</div>
+              <div className="text-lg font-bold text-yellow-200 mb-1">
+                {topUsers[0]?.anonymous_username || "No one yet"}
+              </div>
+              <div className="text-sm text-white/80">
+                leads with <span className="font-bold text-yellow-200">{topUsers[0]?.toxicity_score || 0}</span> points
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Monthly Stats */}
       {monthlyStats && (
         <Card>
@@ -347,33 +387,7 @@ export function ToxicWrapped() {
         </CardContent>
       </Card>
 
-      {/* Fun Facts */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-blue-500" />
-            Fun Facts
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="text-center p-4 bg-white rounded-lg">
-              <div className="text-2xl mb-2">🔥</div>
-              <div className="font-medium">Hottest Drama</div>
-              <div className="text-sm text-muted-foreground">
-                {topConfessions[0]?.net_score || 0} net votes on a single confession
-              </div>
-            </div>
-            <div className="text-center p-4 bg-white rounded-lg">
-              <div className="text-2xl mb-2">👑</div>
-              <div className="font-medium">Toxicity Champion</div>
-              <div className="text-sm text-muted-foreground">
-                {topUsers[0]?.anonymous_username || "No one yet"} leads with {topUsers[0]?.toxicity_score || 0} points
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   )
 }
