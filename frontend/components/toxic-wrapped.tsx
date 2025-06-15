@@ -219,6 +219,38 @@ export function ToxicWrapped() {
         </CardContent>
       </Card>
 
+      {/* Monthly Stats */}
+      {monthlyStats && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              {months[selectedMonth - 1]} {selectedYear} Stats
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600">{monthlyStats.total_confessions}</div>
+                <div className="text-sm text-muted-foreground">Total Confessions</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600">{monthlyStats.total_votes}</div>
+                <div className="text-sm text-muted-foreground">Total Votes</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-600">{monthlyStats.average_toxicity}</div>
+                <div className="text-sm text-muted-foreground">Avg Toxicity</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-orange-600">{monthlyStats.most_active_day}</div>
+                <div className="text-sm text-muted-foreground">Most Active Day</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Fun Facts - Highlighted Section */}
       <Card className="bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 text-white shadow-2xl border-0 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
@@ -258,38 +290,6 @@ export function ToxicWrapped() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Monthly Stats */}
-      {monthlyStats && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              {months[selectedMonth - 1]} {selectedYear} Stats
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">{monthlyStats.total_confessions}</div>
-                <div className="text-sm text-muted-foreground">Total Confessions</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">{monthlyStats.total_votes}</div>
-                <div className="text-sm text-muted-foreground">Total Votes</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">{monthlyStats.average_toxicity}</div>
-                <div className="text-sm text-muted-foreground">Avg Toxicity</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-orange-600">{monthlyStats.most_active_day}</div>
-                <div className="text-sm text-muted-foreground">Most Active Day</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Top Toxic Users */}
       <Card>
