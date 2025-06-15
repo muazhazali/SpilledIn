@@ -271,6 +271,20 @@ NODE_ENV=development
 
 This project is licensed under the MIT License.
 
+## 🐳 Docker
+
+### Build Image
+```bash
+docker build -t spilledin-frontend .
+```
+
+### Run Container
+```bash
+docker run --env-file .env.production --name spilledin_frontend -p 3000:3000 spilledin-frontend
+```
+
+> The container expects the same environment variables defined in `.env.local`. Supply them at runtime using `--env-file` or `-e` flags.
+
 ---
 
 **Happy Confessing! 🤫** 
