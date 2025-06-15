@@ -49,7 +49,7 @@ export function Dashboard({ user }: DashboardProps) {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-red-200 to-pink-200 bg-clip-text text-transparent">
                 SpilledIn
               </h1>
-              <Badge variant="outline" className={`${tier.color} font-medium border-red-300`}>
+              <Badge variant="outline" className={`bg-white text-gray-800 border-red-300 font-medium`}>
                 {tier.emoji} {tier.name}
               </Badge>
             </div>
