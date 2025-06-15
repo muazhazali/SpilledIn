@@ -44,7 +44,7 @@ export function Dashboard({ user }: DashboardProps) {
       {/* Header */}
       <header className="bg-gradient-to-r from-red-600 to-red-700 border-b border-red-500 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex flex-wrap justify-between items-center gap-4 sm:gap-8 py-2">
             <div className="flex items-center space-x-4">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-red-100 to-pink-100 bg-clip-text text-transparent">
                 SpilledIn
@@ -55,7 +55,7 @@ export function Dashboard({ user }: DashboardProps) {
             </div>
 
             {/* Search Input in Header */}
-            <div className="flex-1 max-w-md mx-4">
+            <div className="order-3 w-full sm:order-none sm:w-auto flex-1 sm:max-w-md mx-0 sm:mx-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-500" />
                 <Input
@@ -88,7 +88,7 @@ export function Dashboard({ user }: DashboardProps) {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-12 h-16 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-2 shadow-lg">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-12 h-auto sm:h-16 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-2 shadow-lg gap-2">
             <TabsTrigger 
               value="feed" 
               className="flex items-center justify-center gap-3 h-12 text-base font-semibold rounded-lg transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-red-100 hover:text-red-700"

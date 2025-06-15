@@ -151,7 +151,7 @@ export function ToxicWrapped() {
     return (
       <Card className="w-full shadow-sm border bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950">
         <CardHeader className="pb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-900/30 dark:to-indigo-900/30 rounded-lg shadow-sm">
                 <Sparkles className="h-6 w-6 text-violet-600 dark:text-violet-400" />
@@ -172,7 +172,7 @@ export function ToxicWrapped() {
     <Card className="w-full shadow-sm border bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950">
       {/* Compact Header */}
       <CardHeader className="pb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-900/30 dark:to-indigo-900/30 rounded-lg shadow-sm">
               <Sparkles className="h-6 w-6 text-violet-600 dark:text-violet-400" />
@@ -219,7 +219,7 @@ export function ToxicWrapped() {
 
         {/* Quick Stats Bar */}
         {monthlyStats && (
-          <div className="grid grid-cols-4 gap-8 mt-8 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-violet-50 dark:from-slate-800 dark:via-indigo-900/20 dark:to-violet-900/20 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-8 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-violet-50 dark:from-slate-800 dark:via-indigo-900/20 dark:to-violet-900/20 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <MessageSquare className="h-5 w-5 text-blue-500 dark:text-blue-400" />
@@ -255,7 +255,7 @@ export function ToxicWrapped() {
       {/* Content */}
       <CardContent className="pt-0 space-y-8">
           {/* Highlights Section */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-gradient-to-br from-rose-50 via-orange-50 to-amber-50 dark:from-rose-950/30 dark:via-orange-950/30 dark:to-amber-950/30 border border-rose-100 dark:border-rose-900/30 shadow-sm">
               <CardContent className="p-6 text-center">
                 <div className="text-4xl mb-4">🔥</div>
