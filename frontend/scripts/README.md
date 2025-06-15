@@ -1,113 +1,180 @@
-# User Creation Script
+# SpilledIn Supabase Setup Scripts
 
-This script helps you create new users in your Supabase database with proper authentication and user profiles.
+This directory contains scripts to set up your Supabase database for the SpilledIn anonymous confession platform.
 
-## Prerequisites
+## Files Overview
 
-1. **Environment Variables**: You need to set up the following environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
-   - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key (found in Project Settings > API)
+- **`supabase-setup.sql`** - Main database schema setup script
+- **`sample-data.sql`** - Sample data insertion script (optional)
+- **`setup-supabase.ps1`** - PowerShell automation script for Windows
+- **`README.md`** - This documentation file
 
-2. **Database Setup**: Make sure your Supabase database has:
-   - `companies` table with `invite_code` field
-   - `user_profiles` table
-   - `generate_anonymous_username()` function
+## Quick Start
 
-## Setup
+### Prerequisites
 
-### Option 1: Environment Variables (Recommended)
+1. **Supabase Project**: Create a new project at [supabase.com](https://supabase.com)
+2. **Credentials**: Get your project URL and service role key from the Supabase dashboard
+3. **Windows PowerShell**: For automated setup (Windows 10+ recommended)
 
-Create a `.env.local` file in your frontend directory:
+### Option 1: Automated Setup (Recommended)
 
-```bash
+Run the PowerShell script from the `frontend` directory:
+
+```powershell
+# Basic setup (schema only)
+.\scripts\setup-supabase.ps1 -ProjectUrl "https://your-project.supabase.co" -ServiceRoleKey "your-service-role-key"
+
+# Setup with sample data
+.\scripts\setup-supabase.ps1 -ProjectUrl "https://your-project.supabase.co" -ServiceRoleKey "your-service-role-key" -SampleData
+
+# Show help
+.\scripts\setup-supabase.ps1 -Help
+```
+
+### Option 2: Manual Setup
+
+1. **Copy the SQL content** from `supabase-setup.sql`
+2. **Open Supabase Dashboard** → SQL Editor
+3. **Paste and run** the SQL script
+4. **Optionally run** `sample-data.sql` after creating some users
+
+## What Gets Created
+
+### Database Schema
+
+- **`companies`** - Company information and invite codes
+- **`user_profiles`** - Extended user profiles with anonymous usernames
+- **`confessions`** - User confessions with voting data
+- **`votes`** - Individual user votes on confessions
+- **`awards`** - Monthly recognition awards
+
+### Functions
+
+- **`generate_anonymous_username()`** - Creates unique anonymous usernames
+- **`update_user_toxicity_score(user_uuid)`** - Updates user toxicity scores
+- **`search_confessions(...)`** - Advanced confession search with filters
+- **`get_monthly_stats(month, year)`** - Monthly statistics for Toxic Wrapped
+- **`get_company_stats(company_uuid)`** - Company-specific analytics
+
+### Triggers
+
+- **Vote counting** - Automatically updates confession vote counts
+- **User profile creation** - Creates profiles when users sign up
+- **Toxicity score updates** - Keeps user scores current
+
+### Security
+
+- **Row Level Security (RLS)** enabled on all tables
+- **Company-based data isolation** - Users only see their company's data
+- **Secure functions** with proper permissions
+- **Storage policies** for confession images
+
+### Sample Data
+
+The sample data includes:
+
+- **2 Companies**: TechCorp Inc (`TECH2024`), StartupHub (`STARTUP2024`)
+- **5 Sample Confessions** with realistic workplace scenarios
+- **Sample Votes** to demonstrate the voting system
+- **Sample Awards** for testing Toxic Wrapped features
+
+## Environment Setup
+
+After running the setup, update your `.env.local` file:
+
+```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-### Option 2: Direct Configuration
+## Testing the Setup
 
-Edit the `scripts/create-user.js` file and replace the placeholder values:
+1. **Start your Next.js app**: `pnpm dev`
+2. **Test registration** with invite codes: `TECH2024` or `STARTUP2024`
+3. **Create a few test users** through the registration flow
+4. **Post some confessions** to test the system
+5. **Run sample data script** if you want additional test data
 
-```javascript
-const supabaseUrl = 'https://your-project.supabase.co'
-const supabaseServiceKey = 'your-service-role-key-here'
-```
+## Invite Codes
 
-## Usage
+The setup creates these default invite codes:
 
-### Using the npm script:
+- **`TECH2024`** - TechCorp Inc
+- **`STARTUP2024`** - StartupHub
 
-```bash
-pnpm run create-user
-```
-
-### Or run directly:
-
-```bash
-node scripts/create-user.js
-```
-
-## Features
-
-The script provides three options:
-
-1. **Create a new user**: 
-   - Prompts for email, password, and company invite code
-   - Validates the invite code against your companies table
-   - Creates the auth user with auto-confirmed email
-   - Generates an anonymous username
-   - Creates the user profile with initial values
-
-2. **List available companies**:
-   - Shows all companies and their invite codes
-   - Option to create a user after viewing companies
-
-3. **Exit**: Closes the script
-
-## What the script does:
-
-1. ✅ Validates the company invite code
-2. ✅ Creates the authentication user using Supabase Admin API
-3. ✅ Auto-confirms the user's email (no verification needed)
-4. ✅ Generates a unique anonymous username
-5. ✅ Creates the user profile with:
-   - User ID linking to auth user
-   - Company ID from the invite code
-   - Anonymous username
-   - Initial toxicity score of 0
-   - Initial upvotes/downvotes of 0
-
-## Error Handling
-
-The script includes comprehensive error handling for:
-- Invalid invite codes
-- Duplicate email addresses
-- Database connection issues
-- Missing environment variables
-- Profile creation failures
-
-## Security Notes
-
-- The service role key has admin privileges - keep it secure
-- Never commit the service role key to version control
-- Use environment variables for production deployments
-- The script auto-confirms emails, so users can login immediately
+You can add more companies by inserting into the `companies` table.
 
 ## Troubleshooting
 
-**"Invalid invite code" error:**
-- Check that the company exists in your `companies` table
-- Verify the invite code matches exactly (case-sensitive)
+### Common Issues
 
-**"Auth creation failed" error:**
-- Email might already be registered
-- Check your Supabase project settings
-- Verify the service role key is correct
+**"Permission denied" errors**
+- Make sure you're using the **service role key**, not the anon key
+- Service role keys start with `eyJ` and are much longer
 
-**"Username generation failed" error:**
-- Make sure the `generate_anonymous_username()` function exists in your database
-- Check the function permissions
+**"Function does not exist" errors**
+- The SQL script may have failed partway through
+- Try running it again or check the Supabase logs
 
-**"Profile creation failed" error:**
-- Verify the `user_profiles` table structure
-- Check that the company_id exists in the companies table 
+**Sample data fails to insert**
+- Sample data requires existing users in the database
+- Create users through your app first, then run the sample data script
+
+**PowerShell execution policy errors**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Manual Verification
+
+Check if setup was successful by running these queries in the Supabase SQL editor:
+
+```sql
+-- Check tables exist
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
+
+-- Check sample companies
+SELECT * FROM companies;
+
+-- Check functions exist
+SELECT routine_name FROM information_schema.routines 
+WHERE routine_schema = 'public' 
+AND routine_type = 'FUNCTION';
+```
+
+## Advanced Configuration
+
+### Adding New Companies
+
+```sql
+INSERT INTO companies (name, invite_code) 
+VALUES ('Your Company', 'YOURCODE2024');
+```
+
+### Customizing Anonymous Usernames
+
+Edit the `generate_anonymous_username()` function to change the adjectives and nouns used for username generation.
+
+### Modifying Toxicity Tiers
+
+The toxicity system is score-based. You can customize the tier thresholds in your frontend application logic.
+
+## Support
+
+If you encounter issues:
+
+1. Check the Supabase dashboard logs
+2. Verify your credentials are correct
+3. Ensure you have the necessary permissions
+4. Try running the SQL scripts manually in the Supabase SQL editor
+
+## Security Notes
+
+- **Never commit** your service role key to version control
+- **Use environment variables** for all sensitive credentials
+- **The service role key** has admin access - keep it secure
+- **RLS policies** ensure data isolation between companies 

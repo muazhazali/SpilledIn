@@ -1,0 +1,19 @@
+# Node & build artifacts
+node_modules
+.next
+
+# VCS
+.git
+.gitignore
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+
+# OS & IDE files
+.DS_Store
+*.swp
+
+# Misc
+Dockerfile
+.dockerignore 
