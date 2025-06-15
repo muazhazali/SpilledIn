@@ -280,7 +280,11 @@ export function ConfessionFeed({ searchQuery, currentUserId }: ConfessionFeedPro
                         variant={confession.user_vote === "upvote" ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleVote(confession.id, "upvote")}
-                        className="flex items-center space-x-1"
+                        className={`flex items-center space-x-1 ${
+                          confession.user_vote === "upvote" 
+                            ? "bg-green-600 hover:bg-green-700 text-white" 
+                            : ""
+                        }`}
                       >
                         <ChevronUp className="h-4 w-4" />
                         <span>{confession.upvotes}</span>
