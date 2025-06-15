@@ -147,30 +147,30 @@ export function UserProfile({ user }: UserProfileProps) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
+            <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
               <div className="text-2xl font-bold text-purple-600">{user.profile.toxicity_score}</div>
-              <div className="text-sm text-muted-foreground">Toxicity Score</div>
+              <div className="text-sm text-muted-foreground mt-1">Toxicity Score</div>
             </div>
-            <div className="text-center">
+            <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
               <div className="text-2xl font-bold text-green-600 flex items-center justify-center gap-1">
                 <TrendingUp className="h-5 w-5" />
                 {user.profile.total_upvotes}
               </div>
-              <div className="text-sm text-muted-foreground">Total Upvotes</div>
+              <div className="text-sm text-muted-foreground mt-1">Total Upvotes</div>
             </div>
-            <div className="text-center">
+            <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
               <div className="text-2xl font-bold text-red-600 flex items-center justify-center gap-1">
                 <TrendingDown className="h-5 w-5" />
                 {user.profile.total_downvotes}
               </div>
-              <div className="text-sm text-muted-foreground">Total Downvotes</div>
+              <div className="text-sm text-muted-foreground mt-1">Total Downvotes</div>
             </div>
-            <div className="text-center">
+            <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-2xl font-bold text-blue-600 flex items-center justify-center gap-1">
                 <Calendar className="h-5 w-5" />
                 {confessions.length}
               </div>
-              <div className="text-sm text-muted-foreground">Confessions</div>
+              <div className="text-sm text-muted-foreground mt-1">Confessions</div>
             </div>
           </div>
         </CardContent>
