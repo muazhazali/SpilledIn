@@ -57,12 +57,12 @@ export function Dashboard({ user }: DashboardProps) {
             {/* Search Input in Header */}
             <div className="flex-1 max-w-md mx-8">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-300" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-600" />
                 <Input
                   placeholder="Search confessions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 bg-red-800 border-red-700 text-red-100 placeholder-red-300 focus:border-red-500 focus:ring-red-500"
+                  className="w-full pl-10 bg-white border-white text-red placeholder-red-200 focus:border-white focus:ring-white focus:bg-white"
                 />
               </div>
             </div>
