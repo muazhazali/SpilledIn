@@ -54,6 +54,19 @@ export function Dashboard({ user }: DashboardProps) {
               </Badge>
             </div>
 
+            {/* Search Input in Header */}
+            <div className="flex-1 max-w-md mx-8">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-300" />
+                <Input
+                  placeholder="Search confessions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 bg-red-800 border-red-700 text-red-100 placeholder-red-300 focus:border-red-500 focus:ring-red-500"
+                />
+              </div>
+            </div>
+
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
@@ -95,19 +108,6 @@ export function Dashboard({ user }: DashboardProps) {
           </TabsList>
 
           <TabsContent value="feed" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Search Confessions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Input
-                  placeholder="Search by content or username..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full"
-                />
-              </CardContent>
-            </Card>
             <ConfessionFeed searchQuery={searchQuery} currentUserId={user.user.id} />
           </TabsContent>
 
