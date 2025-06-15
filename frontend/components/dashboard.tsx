@@ -42,42 +42,42 @@ export function Dashboard({ user }: DashboardProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-red-900 border-b border-red-800 sticky top-0 z-50">
+      <header className="bg-gradient-to-r from-red-600 to-red-700 border-b border-red-500 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-red-200 to-pink-200 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-red-100 to-pink-100 bg-clip-text text-transparent">
                 SpilledIn
               </h1>
-              <Badge variant="outline" className={`bg-white text-gray-800 border-red-300 font-medium`}>
+              <Badge variant="outline" className={`bg-white/90 text-red-700 border-red-300 font-medium shadow-sm`}>
                 {tier.emoji} {tier.name}
               </Badge>
             </div>
 
             {/* Search Input in Header */}
-            <div className="flex-1 max-w-md mx-8">
+            <div className="flex-1 max-w-md mx-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-600" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-500" />
                 <Input
                   placeholder="Search confessions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 bg-white border-white text-red placeholder-red-200 focus:border-white focus:ring-white focus:bg-white"
+                  className="w-full pl-10 bg-white/95 border-white/50 text-red-700 placeholder-red-400 focus:border-white focus:ring-white focus:bg-white backdrop-blur-sm"
                 />
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs">
+                <Avatar className="h-8 w-8 ring-2 ring-white/30">
+                  <AvatarFallback className="text-xs bg-white/90 text-red-700">
                     {user.profile.anonymous_username.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium text-red-100">{user.profile.anonymous_username}</span>
+                <span className="text-sm font-medium text-white">{user.profile.anonymous_username}</span>
               </div>
 
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-red-100 hover:text-white hover:bg-red-800">
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-white hover:text-white hover:bg-white/20 transition-colors">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -88,21 +88,33 @@ export function Dashboard({ user }: DashboardProps) {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="feed" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-4 mb-12 h-16 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-2 shadow-lg">
+            <TabsTrigger 
+              value="feed" 
+              className="flex items-center justify-center gap-3 h-12 text-base font-semibold rounded-lg transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-red-100 hover:text-red-700"
+            >
+              <Search className="h-5 w-5" />
               Feed
             </TabsTrigger>
-            <TabsTrigger value="create" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
+            <TabsTrigger 
+              value="create" 
+              className="flex items-center justify-center gap-3 h-12 text-base font-semibold rounded-lg transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-red-100 hover:text-red-700"
+            >
+              <Plus className="h-5 w-5" />
               Confess
             </TabsTrigger>
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
+            <TabsTrigger 
+              value="profile" 
+              className="flex items-center justify-center gap-3 h-12 text-base font-semibold rounded-lg transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-red-100 hover:text-red-700"
+            >
+              <User className="h-5 w-5" />
               Profile
             </TabsTrigger>
-            <TabsTrigger value="wrapped" className="flex items-center gap-2">
-              <Trophy className="h-4 w-4" />
+            <TabsTrigger 
+              value="wrapped" 
+              className="flex items-center justify-center gap-3 h-12 text-base font-semibold rounded-lg transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-red-700 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-red-100 hover:text-red-700"
+            >
+              <Trophy className="h-5 w-5" />
               Toxic Wrapped
             </TabsTrigger>
           </TabsList>
