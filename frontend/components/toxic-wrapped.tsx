@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 import { supabase } from "@/lib/supabase"
 import { getToxicityTier } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
-import { Trophy, Crown, TrendingUp, Calendar, Sparkles } from "lucide-react"
+import { Trophy, Crown, TrendingUp, Calendar, Sparkles, Flame, MessageSquare, Award } from "lucide-react"
 
 interface TopUser {
   anonymous_username: string
@@ -139,18 +140,8 @@ export function ToxicWrapped() {
   }
 
   const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ]
 
   const currentYear = new Date().getFullYear()
@@ -158,53 +149,61 @@ export function ToxicWrapped() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Card className="animate-pulse">
-          <CardHeader>
-            <div className="h-6 bg-muted rounded w-1/3"></div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="h-4 bg-muted rounded"></div>
-              <div className="h-4 bg-muted rounded w-2/3"></div>
+      <Card className="w-full shadow-sm border bg-white dark:bg-slate-900">
+        <CardHeader className="pb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <Sparkles className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+              </div>
+              <div>
+                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-40 animate-pulse"></div>
+                <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-64 mt-2 animate-pulse"></div>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded w-32 animate-pulse"></div>
+          </div>
+        </CardHeader>
+      </Card>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold flex items-center gap-3">
-            <Sparkles className="h-8 w-8" />
-            Toxic Wrapped
-          </CardTitle>
-          <p className="text-purple-100">Monthly recap of the most toxic confessions and users</p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
+    <Card className="w-full shadow-sm border bg-white dark:bg-slate-900">
+      {/* Compact Header */}
+      <CardHeader className="pb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+              <Sparkles className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                Toxic Wrapped
+              </CardTitle>
+              <p className="text-base text-slate-600 dark:text-slate-400 mt-1">Monthly recap of the most toxic confessions and users</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
             <Select
               value={selectedMonth.toString()}
               onValueChange={(value) => setSelectedMonth(Number.parseInt(value))}
             >
-              <SelectTrigger className="w-40 bg-white text-black">
+              <SelectTrigger className="w-32 h-10 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {months.map((month, index) => (
                   <SelectItem key={month} value={(index + 1).toString()}>
-                    {month}
+                    {month.slice(0, 3)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
             <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(Number.parseInt(value))}>
-              <SelectTrigger className="w-32 bg-white text-black">
+              <SelectTrigger className="w-24 h-10 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -216,178 +215,160 @@ export function ToxicWrapped() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Monthly Stats */}
-      {monthlyStats && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              {months[selectedMonth - 1]} {selectedYear} Stats
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">{monthlyStats.total_confessions}</div>
-                <div className="text-sm text-muted-foreground">Total Confessions</div>
+        {/* Quick Stats Bar */}
+        {monthlyStats && (
+          <div className="grid grid-cols-4 gap-8 mt-8 p-6 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <MessageSquare className="h-5 w-5 text-slate-500" />
+                <span className="text-4xl font-extrabold text-slate-900 dark:text-slate-100">{monthlyStats.total_confessions}</span>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">{monthlyStats.total_votes}</div>
-                <div className="text-sm text-muted-foreground">Total Votes</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">{monthlyStats.average_toxicity}</div>
-                <div className="text-sm text-muted-foreground">Avg Toxicity</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-orange-600">{monthlyStats.most_active_day}</div>
-                <div className="text-sm text-muted-foreground">Most Active Day</div>
-              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">Confessions</div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <TrendingUp className="h-5 w-5 text-slate-500" />
+                <span className="text-4xl font-extrabold text-slate-900 dark:text-slate-100">{monthlyStats.total_votes}</span>
+              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">Total Votes</div>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Flame className="h-5 w-5 text-slate-500" />
+                <span className="text-4xl font-extrabold text-slate-900 dark:text-slate-100">{monthlyStats.average_toxicity}</span>
+              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">Avg Toxicity</div>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Calendar className="h-5 w-5 text-slate-500" />
+                <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">{monthlyStats.most_active_day}</span>
+              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-400 font-medium">Most Active</div>
+            </div>
+          </div>
+        )}
+      </CardHeader>
 
-      {/* Fun Facts - Highlighted Section */}
-      <Card className="bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 text-white shadow-2xl border-0 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
-        <CardHeader className="relative z-10">
-          <CardTitle className="text-2xl font-bold flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-full">
-              <Trophy className="h-6 w-6" />
-            </div>
-            🎉 {months[selectedMonth - 1]} Highlights
-          </CardTitle>
-          <p className="text-white/90">The most dramatic moments this month</p>
-        </CardHeader>
-        <CardContent className="relative z-10">
+      {/* Content */}
+      <CardContent className="pt-0 space-y-8">
+          {/* Highlights Section */}
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="text-center p-6 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-              <div className="text-4xl mb-3 animate-bounce">🔥</div>
-              <div className="text-xl font-bold mb-2">Hottest Drama</div>
-              <div className="text-3xl font-extrabold text-yellow-200 mb-1">
-                {topConfessions[0]?.net_score || 0}
-              </div>
-              <div className="text-sm text-white/80">
-                net votes on a single confession
-              </div>
-            </div>
-            <div className="text-center p-6 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-              <div className="text-4xl mb-3 animate-pulse">👑</div>
-              <div className="text-xl font-bold mb-2">Toxicity Champion</div>
-              <div className="text-lg font-bold text-yellow-200 mb-1">
-                {topUsers[0]?.anonymous_username || "No one yet"}
-              </div>
-              <div className="text-sm text-white/80">
-                leads with <span className="font-bold text-yellow-200">{topUsers[0]?.toxicity_score || 0}</span> points
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Top Toxic Users */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-yellow-500" />
-            Most Toxic Users
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {topUsers.slice(0, 5).map((user, index) => {
-              const tier = getToxicityTier(user.toxicity_score)
-              const isTop3 = index < 3
-
-              return (
-                <div
-                  key={user.anonymous_username}
-                  className={`flex items-center justify-between p-4 rounded-lg ${isTop3 ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200" : "bg-muted/50"}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`text-2xl font-bold ${isTop3 ? "text-yellow-600" : "text-muted-foreground"}`}>
-                      #{index + 1}
-                    </div>
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback>{user.anonymous_username.slice(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">{user.anonymous_username}</div>
-                      <Badge className={`${tier.color} text-xs`}>
-                        {tier.emoji} {tier.name}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-purple-600">{user.toxicity_score}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {user.total_upvotes}↑ {user.total_downvotes}↓
-                    </div>
-                  </div>
+            <Card className="bg-slate-100 dark:bg-slate-800 border shadow-sm">
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-4">🔥</div>
+                <div className="font-semibold mb-3 text-slate-700 dark:text-slate-300">Hottest Drama</div>
+                <div className="text-5xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">
+                  {topConfessions[0]?.net_score || 0}
                 </div>
-              )
-            })}
+                <div className="text-sm text-slate-600 dark:text-slate-400">net votes</div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-100 dark:bg-slate-800 border shadow-sm">
+              <CardContent className="p-6 text-center">
+                <div className="text-4xl mb-4">👑</div>
+                <div className="font-semibold mb-3 text-slate-700 dark:text-slate-300">Toxicity Champion</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 truncate mb-2">
+                  {topUsers[0]?.anonymous_username || "No one yet"}
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-400">
+                  <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">{topUsers[0]?.toxicity_score || 0}</span> points
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Top Confessions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-green-500" />
-            Most Popular Confessions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {topConfessions.map((confession, index) => {
-              const tier = getToxicityTier(confession.user_profiles.toxicity_score)
-
-              return (
-                <div key={confession.id} className="border rounded-lg p-4 hover:bg-muted/50">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="text-lg font-bold text-green-600">#{index + 1}</div>
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs">
-                          {confession.user_profiles.anonymous_username.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{confession.user_profiles.anonymous_username}</span>
-                        <Badge variant="outline" className={`${tier.color} text-xs`}>
-                          {tier.emoji} {tier.name}
-                        </Badge>
+          {/* Top Users - Compact */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Crown className="h-5 w-5 text-yellow-500" />
+                Top Toxic Users
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {topUsers.slice(0, 3).map((user, index) => {
+                  const tier = getToxicityTier(user.toxicity_score)
+                  return (
+                    <div
+                      key={user.anonymous_username}
+                      className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="text-lg font-bold text-yellow-600">#{index + 1}</div>
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="text-xs">{user.anonymous_username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium text-sm">{user.anonymous_username}</div>
+                          <Badge className={`${tier.color} text-xs`}>
+                            {tier.emoji} {tier.name}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-purple-600">{user.toxicity_score}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {user.total_upvotes}↑ {user.total_downvotes}↓
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-bold text-lg text-green-600">+{confession.net_score}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {confession.upvotes}↑ {confession.downvotes}↓
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top Confessions - Compact */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Award className="h-5 w-5 text-green-500" />
+                Top Confessions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {topConfessions.slice(0, 3).map((confession, index) => {
+                  const tier = getToxicityTier(confession.user_profiles.toxicity_score)
+                  return (
+                    <div key={confession.id} className="border rounded-lg p-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm font-bold text-green-600">#{index + 1}</div>
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="text-xs">
+                              {confession.user_profiles.anonymous_username.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-sm truncate max-w-32">{confession.user_profiles.anonymous_username}</span>
+                          <Badge variant="outline" className={`${tier.color} text-xs`}>
+                            {tier.emoji}
+                          </Badge>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-green-600">+{confession.net_score}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {confession.upvotes}↑ {confession.downvotes}↓
+                          </div>
+                        </div>
                       </div>
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {confession.content.length > 120
+                          ? `${confession.content.substring(0, 120)}...`
+                          : confession.content}
+                      </p>
                     </div>
-                  </div>
-
-                  <p className="text-foreground leading-relaxed">
-                    {confession.content.length > 200
-                      ? `${confession.content.substring(0, 200)}...`
-                      : confession.content}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </CardContent>
-      </Card>
-
-
-    </div>
+    </Card>
   )
 }
