@@ -42,14 +42,14 @@ export function Dashboard({ user }: DashboardProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50">
+      <header className="bg-red-900 border-b border-red-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-red-200 to-pink-200 bg-clip-text text-transparent">
                 SpilledIn
               </h1>
-              <Badge variant="outline" className={`${tier.color} font-medium`}>
+              <Badge variant="outline" className={`${tier.color} font-medium border-red-300`}>
                 {tier.emoji} {tier.name}
               </Badge>
             </div>
@@ -61,10 +61,10 @@ export function Dashboard({ user }: DashboardProps) {
                     {user.profile.anonymous_username.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium">{user.profile.anonymous_username}</span>
+                <span className="text-sm font-medium text-red-100">{user.profile.anonymous_username}</span>
               </div>
 
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-red-100 hover:text-white hover:bg-red-800">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
